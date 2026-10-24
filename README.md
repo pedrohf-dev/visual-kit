@@ -6,7 +6,7 @@ A local image toolkit for bug reports, support tickets, and visual documentation
 
 [Download](https://github.com/pedrohf-dev/visual-kit/releases/latest) · [Support on Ko-fi](https://ko-fi.com/pedrohlf)
 
-![Visual Kit annotations: mark what matters](docs/community-assets/02-annotate.png)
+![Visual Kit annotations: mark what matters](docs/community-assets/resume.png)
 
 ## Features
 
