@@ -1,0 +1,77 @@
+<svg width="1500" height="760" viewBox="0 0 1500 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1500" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#15131D"/>
+      <stop offset="1" stop-color="#0E1920"/>
+    </linearGradient>
+  </defs>
+  <rect width="1500" height="760" rx="34" fill="url(#bg)"/>
+  <text x="72" y="82" fill="white" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="42" font-weight="760">Annotate what matters</text>
+  <text x="72" y="124" fill="#9C96AA" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="22">Arrows, shapes, text, highlights, markers, crop, undo and redo.</text>
+
+  <g transform="translate(72 168)">
+    <rect x="0" y="0" width="1010" height="520" rx="24" fill="#24212B" stroke="#433D4D"/>
+    <rect x="0" y="0" width="1010" height="56" rx="24" fill="#2C2834"/>
+    <rect x="0" y="34" width="1010" height="22" fill="#2C2834"/>
+    <circle cx="28" cy="28" r="6" fill="#EF6A6A"/>
+    <circle cx="49" cy="28" r="6" fill="#E8B85A"/>
+    <circle cx="70" cy="28" r="6" fill="#65C47C"/>
+    <text x="103" y="35" fill="#AEA8B8" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="17">Example app</text>
+
+    <rect x="38" y="89" width="230" height="386" rx="15" fill="#1D1A23"/>
+    <rect x="72" y="132" width="160" height="20" rx="6" fill="#3C3744"/>
+    <rect x="72" y="176" width="128" height="18" rx="6" fill="#332F3A"/>
+    <rect x="72" y="214" width="142" height="18" rx="6" fill="#332F3A"/>
+    <rect x="72" y="252" width="110" height="18" rx="6" fill="#332F3A"/>
+
+    <rect x="305" y="89" width="667" height="386" rx="15" fill="#FAFAFB"/>
+    <text x="345" y="140" fill="#2F3440" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="26" font-weight="760">Account settings</text>
+    <text x="345" y="184" fill="#727987" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">Email address</text>
+    <rect x="345" y="199" width="440" height="54" rx="10" fill="white" stroke="#CBD0D8" stroke-width="2"/>
+    <text x="365" y="232" fill="#555E6B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="17">user@example.com</text>
+
+    <text x="345" y="296" fill="#727987" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">Notification preference</text>
+    <rect x="345" y="312" width="440" height="54" rx="10" fill="white" stroke="#CBD0D8" stroke-width="2"/>
+    <text x="365" y="345" fill="#555E6B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="17">Weekly digest</text>
+    <path d="M750 333L760 343L770 333" stroke="#7B8490" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="345" y="398" width="152" height="46" rx="10" fill="#7057D6"/>
+    <text x="421" y="427" text-anchor="middle" fill="white" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="700">Save changes</text>
+
+    <rect x="330" y="294" width="480" height="89" rx="14" fill="none" stroke="#F05252" stroke-width="6"/>
+    <path d="M865 220L796 305" stroke="#F05252" stroke-width="7" stroke-linecap="round"/>
+    <path d="M796 305L801 280M796 305L821 297" stroke="#F05252" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="803" y="172" width="137" height="46" rx="12" fill="#F05252"/>
+    <text x="871" y="202" text-anchor="middle" fill="white" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="740">Wrong value</text>
+    <circle cx="850" cy="420" r="24" fill="#F4B740"/>
+    <text x="850" y="428" text-anchor="middle" fill="#2A2416" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="800">1</text>
+  </g>
+
+  <g transform="translate(1120 190)" font-family="Inter, ui-sans-serif, system-ui, sans-serif">
+    <text x="0" y="0" fill="#CFC9DA" font-size="18" font-weight="700">TOOLS</text>
+    <g transform="translate(0 30)">
+      <rect width="300" height="54" rx="14" fill="#211C31" stroke="#634C9D"/>
+      <text x="24" y="34" fill="#E2D8FF" font-size="18" font-weight="650">→ Arrow</text>
+    </g>
+    <g transform="translate(0 96)">
+      <rect width="300" height="54" rx="14" fill="#211C31" stroke="#634C9D"/>
+      <text x="24" y="34" fill="#E2D8FF" font-size="18" font-weight="650">▭ Rectangle & ellipse</text>
+    </g>
+    <g transform="translate(0 162)">
+      <rect width="300" height="54" rx="14" fill="#211C31" stroke="#634C9D"/>
+      <text x="24" y="34" fill="#E2D8FF" font-size="18" font-weight="650">T Text & labels</text>
+    </g>
+    <g transform="translate(0 228)">
+      <rect width="300" height="54" rx="14" fill="#17303A" stroke="#2A8296"/>
+      <text x="24" y="34" fill="#C8F5FF" font-size="18" font-weight="650"># Number markers</text>
+    </g>
+    <g transform="translate(0 294)">
+      <rect width="300" height="54" rx="14" fill="#17303A" stroke="#2A8296"/>
+      <text x="24" y="34" fill="#C8F5FF" font-size="18" font-weight="650">▧ Highlight & redact</text>
+    </g>
+    <g transform="translate(0 360)">
+      <rect width="300" height="54" rx="14" fill="#17303A" stroke="#2A8296"/>
+      <text x="24" y="34" fill="#C8F5FF" font-size="18" font-weight="650">↶ Undo / redo</text>
+    </g>
+  </g>
+</svg>
