@@ -1,11 +1,12 @@
 # Implementation validation
 
-Baseline validation performed on October 24, 2026. Version 0.7.1 also verifies that disabling duplicate detection skips hash indexing during paste.
+Baseline validation performed on October 24, 2026. Version 0.7.2 adds local image decoding, saved-data validation, independent history snapshots, and center-origin annotation positioning checks.
 
 | Check                                        | Result                                              |
 | -------------------------------------------- | --------------------------------------------------- |
+| Official Obsidian ESLint rules (`npm run lint`) | Passed with zero errors and warnings |
 | TypeScript (`npm run check`)                 | Passed                                              |
-| Automated tests (`npm test`)                 | 26 passed                                           |
+| Automated tests (`npm test`)                 | 30 passed                                           |
 | Production build (`npm run build`)           | Passed                                              |
 | Dependency audit after the dependency update | 0 reported vulnerabilities at the time of the audit |
 

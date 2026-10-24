@@ -32,9 +32,9 @@ Requires **Obsidian Desktop 1.8.0 or later**.
 2. Right-click an image and choose **Annotate**.
 3. Add your annotations and choose **Save as new**.
 4. Run **Visual Kit: Normalize image sizes** to set a consistent width.
-5. Select your documentation and run **Visual Kit: Copy for Ticket**.
+5. Select your documentation and run **Visual Kit: Copy for ticket**.
 
-You can also run **Copy with Images** from the command palette. Without a selection, copy commands use the entire note. Formatting and image support depend on the destination editor.
+You can also run **Copy with images** from the command palette. Without a selection, copy commands use the entire note. Formatting and image support depend on the destination editor.
 
 ### Editor shortcuts
 
@@ -55,6 +55,7 @@ Use `Cmd` instead of `Ctrl` on macOS. Customize global shortcuts in **Settings â
 
 ```sh
 npm ci
+npm run lint
 npm run check
 npm test
 npm run build

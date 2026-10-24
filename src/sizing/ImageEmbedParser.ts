@@ -26,7 +26,7 @@ export function parseImages(text: string): ImageEmbed[] {
   const re =
     /!\[\[([^\]\n]+)\]\]|!\[((?:\\.|[^\]\\])*)\]\(\s*(<[^>\n]+>|(?:\\.|[^\s()\\]|\([^()]*\))+)(?:\s+"[^"]*")?\s*\)/g;
   for (const match of masked.matchAll(re)) {
-    if (match.index! > 0 && text[match.index! - 1] === "\\") continue;
+    if (match.index > 0 && text[match.index - 1] === "\\") continue;
     const wiki = match[1] !== undefined;
     const parts = wiki
       ? match[1].split("|")
@@ -36,9 +36,9 @@ export function parseImages(text: string): ImageEmbed[] {
     const label = wiki ? parts.slice(1).join("|") : parts[1];
     const size = /(?:^|\|)(\d+)(?:x(\d+))?$/.exec(label);
     result.push({
-      start: match.index!,
-      end: match.index! + match[0].length,
-      raw: text.slice(match.index!, match.index! + match[0].length),
+      start: match.index,
+      end: match.index + match[0].length,
+      raw: text.slice(match.index, match.index + match[0].length),
       target,
       label,
       kind: wiki ? "wiki" : "markdown",

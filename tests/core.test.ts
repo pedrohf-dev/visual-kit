@@ -7,6 +7,46 @@ import { imageHash } from "../src/duplicates/ImageHasher";
 import { HistoryManager } from "../src/editor/history/HistoryManager";
 import { parseAnnotation } from "../src/editor/persistence/AnnotationSerializer";
 import { readImage } from "../src/paste/ClipboardImageReader";
+import { imageDataBytes } from "../src/clipboard/ImageData";
+import { toDataURL } from "../src/clipboard/ClipboardWriter";
+import { readStoredData } from "../src/storage";
+import { defaults } from "../src/settings";
+
+test("local image data decoding round-trips bytes and rejects network URLs", () => {
+  const bytes = new Uint8Array([0, 1, 137, 255]).buffer;
+  assert.deepEqual(imageDataBytes(toDataURL(bytes, "image/png")), bytes);
+  assert.throws(() => imageDataBytes("https://example.com/image.png"));
+  assert.throws(() => imageDataBytes("data:text/plain;base64,YQ=="));
+});
+test("stored preferences validate unknown input and retain valid values", () => {
+  assert.deepEqual(readStoredData(null), { settings: defaults, index: [] });
+  const parsed = readStoredData({
+    settings: {
+      width: 800,
+      duplicates: false,
+      copyMode: "invalid",
+      fontSize: "large",
+    },
+    index: [null, { path: "a.png", hash: "abc", size: 10, modifiedAt: 1 }],
+  });
+  assert.equal(parsed.settings.width, 800);
+  assert.equal(parsed.settings.duplicates, false);
+  assert.equal(parsed.settings.copyMode, defaults.copyMode);
+  assert.equal(parsed.settings.fontSize, defaults.fontSize);
+  assert.equal(parsed.index.length, 1);
+});
+test("history snapshots are independent of mutations to input and restored values", () => {
+  const h = new HistoryManager<{ value: number }>();
+  const input = { value: 1 };
+  h.push(input);
+  input.value = 9;
+  h.push({ value: 2 });
+  const restored = h.undo()!;
+  assert.equal(restored.value, 1);
+  restored.value = 8;
+  h.redo();
+  assert.equal(h.undo()!.value, 1);
+});
 
 test("normalizes all supported syntaxes while removing explicit heights", () => {
   assert.equal(

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { JSDOM } from "jsdom";
-import { Canvas, StaticCanvas, Rect, FabricImage } from "fabric";
+import { Canvas, StaticCanvas, Rect, FabricImage, Point } from "fabric";
 import { ImageEditorView } from "../src/editor/ImageEditorView";
 import { defaults } from "../src/settings";
 import { TFile } from "./obsidian-mock";
@@ -15,11 +15,26 @@ Object.assign(globalThis, {
   NodeFilter: dom.NodeFilter,
   HTMLAnchorElement: dom.HTMLAnchorElement,
   HTMLImageElement: dom.HTMLImageElement,
+  createFragment: () => dom.document.createDocumentFragment(),
+  createDiv: () => dom.document.createElement("div"),
+  createEl: (tag: string) => dom.document.createElement(tag),
+});
+Object.defineProperty(dom.HTMLElement.prototype, "setCssStyles", {
+  value: function (this: HTMLElement, styles: Partial<CSSStyleDeclaration>) {
+    Object.assign(this.style, styles);
+  },
+});
+Object.defineProperty(dom.Element.prototype, "instanceOf", {
+  value: function (this: Element, type: { name: string }) {
+    return this.tagName === (type.name === "HTMLAnchorElement" ? "A" : "IMG");
+  },
 });
 test("editor raster export respects crop at arbitrary viewport zoom and reopens objects", async () => {
   const base = new StaticCanvas(undefined, { width: 100, height: 80 });
   base.add(
     new Rect({
+      originX: "left",
+      originY: "top",
       left: 0,
       top: 0,
       width: 100,
@@ -31,7 +46,12 @@ test("editor raster export respects crop at arbitrary viewport zoom and reopens 
   const source = base.toDataURL();
   const canvas = new Canvas(undefined, { width: 200, height: 200 });
   const image = await FabricImage.fromURL(source);
-  image.set({ selectable: false, evented: false });
+  image.set({
+    selectable: false,
+    evented: false,
+    originX: "left",
+    originY: "top",
+  });
   canvas.add(image);
   const view = new ImageEditorView(
     { app: {}, settings: { ...defaults }, persist: async () => {} } as never,
@@ -43,6 +63,8 @@ test("editor raster export respects crop at arbitrary viewport zoom and reopens 
   view.snapshot();
   canvas.add(
     new Rect({
+      originX: "left",
+      originY: "top",
       left: 10,
       top: 10,
       width: 20,
@@ -72,6 +94,7 @@ test("editor raster export respects crop at arbitrary viewport zoom and reopens 
   assert.equal(object.opacity, 1);
   assert.equal(object.fill, "#000000");
   const check = new StaticCanvas(undefined, { width: 50, height: 40 });
+  exported.set({ originX: "left", originY: "top" });
   check.add(exported);
   check.renderAll();
   assert.deepEqual(
@@ -141,4 +164,26 @@ test("rich export fails before writing clipboard on missing and remote images", 
     /Unsupported/,
   );
   assert.deepEqual(clipboard.last, before);
+});
+
+test("center-origin annotations retain drag coordinates for rectangles and arrows", async () => {
+  const canvas = new Canvas(undefined, { width: 200, height: 200 });
+  const view = new ImageEditorView(
+    { app: {}, settings: { ...defaults }, persist: async () => {} } as never,
+    new TFile("a.png") as never,
+  ) as any;
+  view.canvas = canvas;
+  view.start = new Point(20, 30);
+  canvas.getScenePoint = () => new Point(90, 70);
+  view.tool = "rectangle";
+  view.pointerMove({});
+  assert.equal(view.preview.originX, "center");
+  assert.equal(view.preview.getBoundingRect().left, 20);
+  assert.equal(view.preview.getBoundingRect().top, 30);
+  view.tool = "arrow";
+  view.pointerMove({});
+  const tail = view.preview.getPointByOrigin("left", "center");
+  assert.ok(Math.abs(tail.x - 20) < 0.001);
+  assert.ok(Math.abs(tail.y - 30) < 0.001);
+  await canvas.dispose();
 });

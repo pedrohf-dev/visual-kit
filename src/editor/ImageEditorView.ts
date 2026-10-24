@@ -1,3 +1,4 @@
+import { imageDataBytes } from "../clipboard/ImageData";
 import { Modal, Notice, TFile, Editor } from "obsidian";
 import {
   Canvas,
@@ -24,8 +25,6 @@ import { askText, choose } from "../ui";
 import { ensureFolder, uniquePath } from "../paste/ImageFileWriter";
 import { imageFolder, safeName } from "../paste/ImageNamingService";
 import { ImageEmbed } from "../sizing/ImageEmbedParser";
-FabricObject.ownDefaults.originX = "left";
-FabricObject.ownDefaults.originY = "top";
 FabricObject.customProperties = [...FabricObject.customProperties, "data"];
 type Tool =
   | "select"
@@ -148,7 +147,7 @@ export class ImageEditorView extends Modal {
         this.color = color;
         this.applyProperties();
       });
-      b.style.borderBottom = `4px solid ${color}`;
+      b.setCssStyles({ borderBottom: `4px solid ${color}` });
     }
     const color = props.createEl("input", {
       type: "color",
@@ -225,6 +224,7 @@ export class ImageEditorView extends Modal {
     }
     this.crop = { x: 0, y: 0, width: base.width, height: base.height };
     base.set({ selectable: false, evented: false });
+    base.setPositionByOrigin(new Point(0, 0), "left", "top");
     this.canvas.add(base);
     const sidecar = this.app.vault.getAbstractFileByPath(
       this.file.path.replace(/\.[^.]+$/, ".qrc.json"),
@@ -311,7 +311,7 @@ export class ImageEditorView extends Modal {
     return {
       version: 1,
       source: this.source,
-      canvas: this.canvas.toJSON(),
+      canvas: this.canvas.toJSON() as Record<string, unknown>,
       crop: { ...this.crop },
       nextMarker: this.nextMarker,
     };
@@ -447,6 +447,7 @@ export class ImageEditorView extends Modal {
         backgroundColor: this.background ? "#ffffff" : "",
         opacity: this.opacity,
       });
+      text.setPositionByOrigin(this.start, "left", "top");
       this.canvas.add(text);
       this.setTool("select");
       this.canvas.setActiveObject(text);
@@ -477,6 +478,7 @@ export class ImageEditorView extends Modal {
         ],
         { left: this.start.x, top: this.start.y },
       );
+      number.setPositionByOrigin(this.start, "left", "top");
       this.canvas.add(number);
       if (this.plugin.settings.autoMarkers) this.nextMarker++;
       this.start = undefined;
@@ -529,7 +531,7 @@ export class ImageEditorView extends Modal {
         {
           left: this.start.x,
           top: this.start.y,
-          originX: "left",
+          originX: "center",
           originY: "center",
           angle: (Math.atan2(dy, dx) * 180) / Math.PI,
           fill: this.color,
@@ -564,6 +566,11 @@ export class ImageEditorView extends Modal {
           strokeDashArray: [8, 4],
         });
     }
+    this.preview.setPositionByOrigin(
+      this.tool === "arrow" ? this.start : new Point(x, y),
+      "left",
+      this.tool === "arrow" ? "center" : "top",
+    );
     this.canvas.add(this.preview);
     this.canvas.requestRenderAll();
   }
@@ -684,7 +691,7 @@ export class ImageEditorView extends Modal {
     const path =
       mode === "replace" ? this.file.path : uniquePath(this.app, folder, name);
     const url = this.export();
-    const bytes = await (await fetch(url)).arrayBuffer();
+    const bytes = imageDataBytes(url);
     if (mode === "replace") await this.app.vault.modifyBinary(this.file, bytes);
     else await this.app.vault.createBinary(path, bytes);
     const sidecarPath = path.replace(/\.png$/i, ".qrc.json");
@@ -743,6 +750,7 @@ export class ImageEditorView extends Modal {
     const image = await FabricImage.fromURL(url);
     this.canvas.clear();
     image.set({ selectable: false, evented: false });
+    image.setPositionByOrigin(new Point(0, 0), "left", "top");
     this.canvas.add(image);
     this.source = url;
     this.crop = { x: 0, y: 0, width: image.width, height: image.height };

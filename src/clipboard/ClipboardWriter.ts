@@ -1,40 +1,14 @@
-interface ElectronClipboard {
-  clipboard: {
-    write(data: { html?: string; text?: string; image?: unknown }): void;
-    writeImage(image: unknown): void;
-  };
-  nativeImage: { createFromDataURL(url: string): unknown };
+import { clipboard, nativeImage } from "electron";
+export function writeRich(html: string, text: string): Promise<void> {
+  clipboard.write({ html, text });
+  return Promise.resolve();
 }
-function electron(): ElectronClipboard | null {
-  try {
-    return require("electron") as ElectronClipboard;
-  } catch {
-    return null;
-  }
-}
-export async function writeRich(html: string, text: string) {
-  const desktop = electron();
-  if (desktop) {
-    desktop.clipboard.write({ html, text });
-    return;
-  }
-  await navigator.clipboard.write([
-    new ClipboardItem({
-      "text/html": new Blob([html], { type: "text/html" }),
-      "text/plain": new Blob([text], { type: "text/plain" }),
-    }),
-  ]);
-}
-export async function writeImage(dataURL: string) {
-  const desktop = electron();
-  if (desktop) {
-    desktop.clipboard.writeImage(
-      desktop.nativeImage.createFromDataURL(dataURL),
-    );
-    return;
-  }
-  const blob = await (await fetch(dataURL)).blob();
-  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+export function writeImage(dataURL: string): Promise<void> {
+  const image = nativeImage.createFromDataURL(dataURL);
+  if (image.isEmpty())
+    return Promise.reject(new Error("Unable to decode image for clipboard"));
+  clipboard.writeImage(image);
+  return Promise.resolve();
 }
 export function toDataURL(bytes: ArrayBuffer, mime: string): string {
   const array = new Uint8Array(bytes);

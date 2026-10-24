@@ -1,7 +1,13 @@
 export function safeName(name: string): string {
   return (
     name
-      .replace(/[<>:"/\\|?*\[\]#^\x00-\x1f]/g, "-")
+      .split("")
+      .map((character) =>
+        character.charCodeAt(0) < 32 || '<>:"/\\|?*[]#^'.includes(character)
+          ? "-"
+          : character,
+      )
+      .join("")
       .replace(/[. ]+$/g, "")
       .slice(0, 120) || "image"
   );
@@ -34,7 +40,7 @@ export function imageFolder(
     template === "same-folder"
       ? parent
       : template.replaceAll("{note}", safeName(note));
-  if (/^[\/\\]|^[A-Za-z]:|(?:^|[\/\\])\.\.(?:[\/\\]|$)/.test(folder))
+  if (/^[/\\]|^[A-Za-z]:|(?:^|[/\\])\.\.(?:[/\\]|$)/.test(folder))
     throw new Error("Image folder must be relative to the vault.");
   return folder.replaceAll("\\", "/").replace(/^\/+|\/+$/g, "");
 }

@@ -1,25 +1,33 @@
 {
   "name": "obsidian-visual-kit",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": true,
   "scripts": {
     "build": "node esbuild.mjs",
     "check": "tsc --noEmit",
     "test": "node tests/run.mjs",
-    "format": "prettier --write src tests *.json *.mjs styles.css README.md"
+    "format": "prettier --write src tests *.json *.mjs styles.css README.md",
+    "lint": "eslint src --max-warnings=0"
   },
   "dependencies": {
     "fabric": "^7.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^22.0.0",
     "esbuild": "^0.25.0",
+    "eslint": "^10.13.0",
+    "eslint-plugin-obsidianmd": "^0.4.2",
     "jsdom": "^26.1.0",
     "obsidian": "^1.8.7",
     "prettier": "^3.9.10",
     "tsx": "^4.19.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.72.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "moment": "2.31.0"
+  }
 }

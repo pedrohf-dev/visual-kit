@@ -11,7 +11,7 @@ export async function copyMarkdown(
 ) {
   const owner = new Component();
   owner.load();
-  const root = document.createElement("div");
+  const root = createDiv();
   try {
     // Replace image syntax before rendering. This also prevents remote-image requests.
     const embeds = parseImages(markdown);
@@ -31,7 +31,7 @@ export async function copyMarkdown(
       prepared =
         prepared.slice(0, match.index) +
         replacement +
-        prepared.slice(match.index! + match[0].length);
+        prepared.slice(match.index + match[0].length);
     }
     // Reject unsupported inline/reference image syntax before MarkdownRenderer
     // gets a chance to resolve a remote URL without a filename extension.
@@ -46,7 +46,7 @@ export async function copyMarkdown(
     for (const node of nodes) {
       const regex = new RegExp(`${tokenPrefix}IMAGE(\\d+)END`, "g");
       let offset = 0;
-      const fragment = document.createDocumentFragment();
+      const fragment = createFragment();
       let changed = false;
       for (const match of node.data.matchAll(regex)) {
         changed = true;
@@ -65,7 +65,7 @@ export async function copyMarkdown(
         const file = app.metadataCache.getFirstLinkpathDest(target, sourcePath);
         if (!(file instanceof TFile))
           throw new Error(`Image not found: ${embed.target}`);
-        const img = document.createElement("img");
+        const img = createEl("img");
         img.src = toDataURL(
           await app.vault.readBinary(file),
           imageMime(file.extension),
@@ -80,7 +80,7 @@ export async function copyMarkdown(
               : undefined;
         if (width) {
           img.width = width;
-          img.style.width = `${width}px`;
+          img.setCssStyles({ width: `${width}px` });
         }
         if (
           settings.preserveResize &&
@@ -88,11 +88,11 @@ export async function copyMarkdown(
           (!(ticket && settings.normalizeCopy) || settings.preserveHeight)
         ) {
           img.height = embed.height;
-          img.style.height = `${embed.height}px`;
-        } else img.style.height = "auto";
-        img.style.maxWidth = "100%";
+          img.setCssStyles({ height: `${embed.height}px` });
+        } else img.setCssStyles({ height: "auto" });
+        img.setCssStyles({ maxWidth: "100%" });
         fragment.append(img);
-        offset = match.index! + match[0].length;
+        offset = match.index + match[0].length;
       }
       if (changed) {
         fragment.append(node.data.slice(offset));
@@ -105,11 +105,7 @@ export async function copyMarkdown(
     root
       .querySelectorAll("input")
       .forEach((el) =>
-        el.replaceWith(
-          document.createTextNode(
-            (el as HTMLInputElement).checked ? "☑ " : "☐ ",
-          ),
-        ),
+        el.replaceWith(document.createTextNode(el.checked ? "☑ " : "☐ ")),
       );
     for (const el of Array.from(root.querySelectorAll("*"))) {
       for (const attr of Array.from(el.attributes))
@@ -129,33 +125,39 @@ export async function copyMarkdown(
         )
           el.removeAttribute(attr.name);
       if (
-        el instanceof HTMLAnchorElement &&
+        el.instanceOf(HTMLAnchorElement) &&
         !/^(https?:|mailto:|#)/i.test(el.getAttribute("href") || "")
       )
         el.removeAttribute("href");
-      if (!(el instanceof HTMLImageElement)) el.removeAttribute("style");
+      if (!el.instanceOf(HTMLImageElement)) el.removeAttribute("style");
     }
     if (settings.movidesk) {
-      root.style.cssText =
-        "font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#222";
+      root.setCssStyles({
+        fontFamily: "Arial,sans-serif",
+        fontSize: "14px",
+        lineHeight: "1.5",
+        color: "#222",
+      });
       root
         .querySelectorAll("table")
-        .forEach((el) => el.setAttribute("style", "border-collapse:collapse"));
+        .forEach((el) => el.setCssStyles({ borderCollapse: "collapse" }));
       root
-        .querySelectorAll("td,th")
+        .querySelectorAll<HTMLElement>("td,th")
         .forEach((el) =>
-          el.setAttribute(
-            "style",
-            "border:1px solid #bbb;padding:6px;text-align:left",
-          ),
+          el.setCssStyles({
+            border: "1px solid #bbb",
+            padding: "6px",
+            textAlign: "left",
+          }),
         );
       root
         .querySelectorAll("pre")
         .forEach((el) =>
-          el.setAttribute(
-            "style",
-            "white-space:pre-wrap;background:#f3f3f3;padding:10px",
-          ),
+          el.setCssStyles({
+            whiteSpace: "pre-wrap",
+            background: "#f3f3f3",
+            padding: "10px",
+          }),
         );
     }
     if (!settings.preserveFormatting)

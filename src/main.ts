@@ -8,15 +8,13 @@ import {
   Setting,
   PluginSettingTab,
   Menu,
+  type SettingDefinitionGroup,
+  type SettingDefinitionRender,
 } from "obsidian";
 import { defaults, Settings } from "./settings";
-import { DuplicateIndex, HashEntry } from "./duplicates/DuplicateIndex";
-import {
-  isImage,
-  parseImages,
-  resizedEmbed,
-  ImageEmbed,
-} from "./sizing/ImageEmbedParser";
+import { DuplicateIndex } from "./duplicates/DuplicateIndex";
+import { readStoredData } from "./storage";
+import { isImage, parseImages, resizedEmbed } from "./sizing/ImageEmbedParser";
 import { normalizeImages } from "./sizing/ImageSizeNormalizer";
 import { imageFiles } from "./paste/ClipboardImageReader";
 import { MultiImagePasteHandler } from "./paste/MultiImagePasteHandler";
@@ -32,11 +30,11 @@ export default class VisualKit extends Plugin {
   private ribbon?: HTMLElement;
   private saveQueue: Promise<void> = Promise.resolve();
   async onload() {
-    const stored = await this.loadData();
-    this.settings = { ...defaults, ...stored?.settings };
+    const stored = readStoredData(await this.loadData());
+    this.settings = stored.settings;
     this.index = new DuplicateIndex(this.app);
-    if (this.settings.persistIndex && Array.isArray(stored?.index))
-      for (const e of stored.index as HashEntry[])
+    if (this.settings.persistIndex)
+      for (const e of stored.index)
         if (e.path && e.hash) this.index.entries.set(e.path, e);
     this.paste = new MultiImagePasteHandler(this);
     this.addSettingTab(new SettingsTab(this));
@@ -46,13 +44,13 @@ export default class VisualKit extends Plugin {
     };
     this.addCommand({
       id: "copy-with-images",
-      name: "Copy with Images",
+      name: "Copy with images",
       editorCallback: (editor, info) =>
         guarded(() => this.copy(editor, info.file?.path || "")),
     });
     this.addCommand({
       id: "copy-for-ticket",
-      name: "Copy for Ticket",
+      name: "Copy for ticket",
       editorCallback: (editor, info) =>
         guarded(() => this.copy(editor, info.file?.path || "", true)),
     });
@@ -64,7 +62,6 @@ export default class VisualKit extends Plugin {
     this.addCommand({
       id: "normalize-default-width",
       name: "Normalize images using default width",
-      hotkeys: [{ modifiers: ["Mod", "Alt"], key: "i" }],
       editorCallback: (editor) =>
         this.normalize(editor, this.settings.width, !!editor.getSelection()),
     });
@@ -111,6 +108,7 @@ export default class VisualKit extends Plugin {
     this.registerEvent(
       this.app.workspace.on("editor-menu", (menu, editor, info) => {
         if (!info.file) return;
+        const notePath = info.file.path;
         const context = this.contextAt(editor, info.file);
         if (context) {
           const file = this.resolve(context.embed.target, info.file.path);
@@ -120,9 +118,7 @@ export default class VisualKit extends Plugin {
           item
             .setTitle("Copy for ticket")
             .setIcon("copy")
-            .onClick(() =>
-              guarded(() => this.copy(editor, info.file!.path, true)),
-            ),
+            .onClick(() => guarded(() => this.copy(editor, notePath, true))),
         );
         menu.addItem((item) =>
           item
@@ -175,7 +171,7 @@ export default class VisualKit extends Plugin {
         event.preventDefault();
         event.stopPropagation();
         const embed = parseImages(view.editor.getValue()).find(
-          (e) => this.resolve(e.target, view.file!.path)?.path === file!.path,
+          (e) => this.resolve(e.target, view.file!.path)?.path === file.path,
         );
         const context = embed
           ? {
@@ -264,7 +260,9 @@ export default class VisualKit extends Plugin {
   resolve(target: string, source: string) {
     try {
       target = decodeURIComponent(target);
-    } catch {}
+    } catch {
+      /* Preserve literal percent characters in file names. */
+    }
     const file = this.app.metadataCache.getFirstLinkpathDest(target, source);
     return file instanceof TFile ? file : null;
   }
@@ -279,9 +277,7 @@ export default class VisualKit extends Plugin {
   private annotateAtCursor(editor: Editor, note: TFile) {
     const context = this.contextAt(editor, note);
     if (!context) {
-      new Notice(
-        "Place the cursor inside an image embed, or right-click an image.",
-      );
+      new Notice("Select an image embed, or right-click an image.");
       return;
     }
     const file = this.resolve(context.embed.target, note.path);
@@ -365,7 +361,7 @@ export default class VisualKit extends Plugin {
               return;
             }
             if (context.editor.getValue() !== context.before) {
-              new Notice("Note changed; retry Resize");
+              new Notice("Note changed; retry resize");
               return;
             }
             context.editor.replaceRange(
@@ -414,11 +410,13 @@ export default class VisualKit extends Plugin {
     }
   }
   normalizeModal(editor: Editor) {
-    const plugin = this;
+    const defaultWidth = this.settings.width;
+    const apply = (width: number | undefined, selection: boolean) =>
+      this.normalize(editor, width, selection);
     class Normalize extends Modal {
       onOpen() {
         this.titleEl.setText("Normalize image sizes");
-        let width: number | undefined = plugin.settings.width,
+        let width: number | undefined = defaultWidth,
           selection = false;
         const before = editor.getValue();
         new Setting(this.contentEl)
@@ -461,7 +459,7 @@ export default class VisualKit extends Plugin {
                   new Notice("Note changed; reopen normalization");
                   return;
                 }
-                plugin.normalize(editor, width, selection);
+                apply(width, selection);
                 this.close();
               }),
           );
@@ -471,117 +469,174 @@ export default class VisualKit extends Plugin {
   }
 }
 
+type RenderedSetting = SettingDefinitionRender & {
+  render: (setting: Setting) => void;
+};
+type SettingField = {
+  key: keyof Settings;
+  name: string;
+  options?: Record<string, string>;
+  min?: number;
+  max?: number;
+};
 class SettingsTab extends PluginSettingTab {
   constructor(private plugin: VisualKit) {
     super(plugin.app, plugin);
   }
+  getSettingDefinitions(): (SettingDefinitionGroup & {
+    items: RenderedSetting[];
+  })[] {
+    const groups: { name: string; fields: SettingField[] }[] = [
+      {
+        name: "Clipboard",
+        fields: [
+          {
+            key: "copyMode",
+            name: "Copy mode",
+            options: {
+              dedicated: "Dedicated",
+              smart: "Smart copy",
+              always: "Always rich copy",
+            },
+          },
+          { key: "preserveFormatting", name: "Preserve formatting" },
+          { key: "preserveResize", name: "Preserve resize" },
+          { key: "movidesk", name: "Movidesk optimization" },
+        ],
+      },
+      {
+        name: "Editor",
+        fields: [
+          { key: "color", name: "Default color" },
+          { key: "lineWidth", name: "Default line width", min: 1, max: 100 },
+          { key: "fontSize", name: "Default font size", min: 8, max: 300 },
+          {
+            key: "saveMode",
+            name: "Save mode",
+            options: {
+              new: "Save as new image",
+              replace: "Replace original (confirm)",
+              copy: "Save copy (custom name)",
+            },
+          },
+          {
+            key: "annotationFolder",
+            name: "Annotation folder (empty = beside source)",
+          },
+          { key: "editable", name: "Preserve editable annotation data" },
+        ],
+      },
+      {
+        name: "Image sizing",
+        fields: [
+          {
+            key: "width",
+            name: "Default normalized width",
+            min: 1,
+            max: 16384,
+          },
+          { key: "preserveHeight", name: "Preserve explicit height" },
+          { key: "normalizeCopy", name: "Normalize on copy for ticket" },
+          { key: "ribbon", name: "Show normalization ribbon button" },
+        ],
+      },
+      {
+        name: "Paste",
+        fields: [
+          { key: "multiPaste", name: "Paste multiple images" },
+          { key: "pasteWidth", name: "Apply default width to pasted images" },
+          {
+            key: "blankLines",
+            name: "Insert blank line between pasted images",
+          },
+          { key: "naming", name: "Naming template: {note}-{date}-{counter}" },
+          {
+            key: "folder",
+            name: "Image folder: attachments, attachments/{note}, images, same-folder or custom path",
+          },
+        ],
+      },
+      {
+        name: "Duplicates",
+        fields: [
+          { key: "duplicates", name: "Enable duplicate detection" },
+          {
+            key: "duplicateAction",
+            name: "When duplicate image is detected",
+            options: {
+              reuse: "Reuse existing",
+              ask: "Ask",
+              save: "Always save",
+            },
+          },
+          { key: "persistIndex", name: "Maintain local hash index" },
+        ],
+      },
+      {
+        name: "QA",
+        fields: [
+          { key: "autoMarkers", name: "Auto increment markers" },
+          { key: "quickTools", name: "Quick tools" },
+        ],
+      },
+    ];
+    return groups.map((group) => ({
+      type: "group",
+      heading: group.name,
+      items: group.fields.map((field) => this.definition(field)),
+    }));
+  }
+  private definition(field: SettingField): RenderedSetting {
+    return {
+      name: field.name,
+      render: (setting) => {
+        const value = this.plugin.settings[field.key];
+        const save = (updated: string | boolean | number) => {
+          Object.assign(this.plugin.settings, { [field.key]: updated });
+          void this.plugin.persist();
+          if (field.key === "ribbon") this.plugin.updateRibbon();
+        };
+        if (field.options)
+          setting.addDropdown((control) =>
+            control
+              .addOptions(field.options ?? {})
+              .setValue(String(value))
+              .onChange(save),
+          );
+        else if (typeof value === "boolean")
+          setting.addToggle((control) =>
+            control.setValue(value).onChange(save),
+          );
+        else if (field.key === "color")
+          setting.addColorPicker((control) =>
+            control.setValue(String(value)).onChange(save),
+          );
+        else
+          setting.addText((control) =>
+            control.setValue(String(value)).onChange((input) => {
+              if (typeof value === "number") {
+                const n = Number(input);
+                if (
+                  Number.isInteger(n) &&
+                  n >= (field.min ?? 1) &&
+                  n <= (field.max ?? 16384)
+                )
+                  save(n);
+              } else save(input);
+            }),
+          );
+      },
+    };
+  }
+  // Obsidian <1.13 uses this fallback; newer hosts render/search the same definitions.
   display() {
     const el = this.containerEl;
     el.empty();
-    el.createEl("h2", { text: "Visual Kit" });
-    el.createEl("p", {
-      text: "All image processing stays local. Hotkeys can be changed in Obsidian → Hotkeys.",
-    });
-    const settings = this.plugin.settings;
-    const save = () => {
-      void this.plugin.persist();
-    };
-    const toggle = (key: keyof Settings, name: string) =>
-      new Setting(el).setName(name).addToggle((t) =>
-        t.setValue(settings[key] as boolean).onChange((v) => {
-          (settings as unknown as Record<string, unknown>)[key] = v;
-          save();
-          if (key === "ribbon") this.plugin.updateRibbon();
-        }),
-      );
-    const text = (key: keyof Settings, name: string) =>
-      new Setting(el).setName(name).addText((t) =>
-        t.setValue(String(settings[key])).onChange((v) => {
-          (settings as unknown as Record<string, unknown>)[key] = v;
-          save();
-        }),
-      );
-    const number = (
-      key: keyof Settings,
-      name: string,
-      min: number,
-      max: number,
-    ) =>
-      new Setting(el).setName(name).addText((t) =>
-        t.setValue(String(settings[key])).onChange((v) => {
-          const n = Number(v);
-          if (Number.isInteger(n) && n >= min && n <= max) {
-            (settings as unknown as Record<string, unknown>)[key] = n;
-            save();
-          }
-        }),
-      );
-    const select = (
-      key: keyof Settings,
-      name: string,
-      options: Record<string, string>,
-    ) =>
-      new Setting(el).setName(name).addDropdown((d) =>
-        d
-          .addOptions(options)
-          .setValue(String(settings[key]))
-          .onChange((v) => {
-            (settings as unknown as Record<string, unknown>)[key] = v;
-            save();
-          }),
-      );
-    el.createEl("h3", { text: "Clipboard" });
-    select("copyMode", "Copy mode", {
-      dedicated: "Dedicated",
-      smart: "Smart Copy",
-      always: "Always Rich Copy",
-    });
-    toggle("preserveFormatting", "Preserve formatting");
-    toggle("preserveResize", "Preserve resize");
-    toggle("movidesk", "Movidesk optimization");
-    el.createEl("h3", { text: "Editor" });
-    new Setting(el).setName("Default color").addColorPicker((c) =>
-      c.setValue(settings.color).onChange((v) => {
-        settings.color = v;
-        save();
-      }),
-    );
-    number("lineWidth", "Default line width", 1, 100);
-    number("fontSize", "Default font size", 8, 300);
-    select("saveMode", "Save mode", {
-      new: "Save as new image",
-      replace: "Replace original (confirm)",
-      copy: "Save copy (custom name)",
-    });
-    text("annotationFolder", "Annotation folder (empty = beside source)");
-    toggle("editable", "Preserve editable annotation data");
-    el.createEl("h3", { text: "Image sizing" });
-    number("width", "Default normalized width", 1, 16384);
-    toggle("preserveHeight", "Preserve explicit height");
-    toggle("normalizeCopy", "Normalize on Copy for Ticket");
-    toggle("ribbon", "Show normalization ribbon button");
-    el.createEl("h3", { text: "Paste" });
-    toggle("multiPaste", "Paste multiple images");
-    toggle("pasteWidth", "Apply default width to pasted images");
-    toggle("blankLines", "Insert blank line between pasted images");
-    text("naming", "Naming template: {note}-{date}-{counter}");
-    text(
-      "folder",
-      "Image folder: attachments, attachments/{note}, images, same-folder or custom path",
-    );
-    el.createEl("h3", { text: "Duplicates" });
-    toggle("duplicates", "Enable duplicate detection");
-    select("duplicateAction", "When duplicate image is detected", {
-      reuse: "Reuse existing",
-      ask: "Ask",
-      save: "Always save",
-    });
-    toggle("persistIndex", "Maintain local hash index");
-    el.createEl("h3", { text: "QA" });
-    toggle("autoMarkers", "Auto increment markers");
-    toggle("quickTools", "Quick tools");
-    el.createEl("p", {
-      text: "Redaction uses solid, opaque rectangles. Export format: PNG. GIF originals are preserved.",
-    });
+    for (const group of this.getSettingDefinitions()) {
+      new Setting(el).setName(group.heading ?? "").setHeading();
+      for (const item of group.items ?? [])
+        if ("render" in item && item.render)
+          item.render(new Setting(el).setName(item.name));
+    }
   }
 }
