@@ -3,7 +3,7 @@
   "name": "Visual Kit",
   "version": "0.7.1",
   "minAppVersion": "1.8.0",
-  "description": "Local evidence workflow: batch paste, deduplicate, annotate, normalize and copy rich text with images.",
+  "description": "Paste, annotate, resize, deduplicate and copy images with rich text — entirely inside Obsidian.",
   "author": "Visual Kit",
   "isDesktopOnly": true
 }
