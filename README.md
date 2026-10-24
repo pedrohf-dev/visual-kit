@@ -1,194 +1,57 @@
-<div align="center">
-
 # Visual Kit
 
-### Screenshots, annotations, and documentation. Inside Obsidian.
+**Paste, annotate, and share screenshots without leaving Obsidian.**
 
-Turn screenshots into clear, organized evidence — from capture to ticket.
+A local image toolkit for bug reports, support tickets, and visual documentation.
 
-**Desktop · Local processing · Obsidian 1.8+ · v0.7.1**
+[Download](https://github.com/pedrohf-dev/visual-kit/releases/latest) · [Support on Ko-fi](https://ko-fi.com/pedrohlf)
 
-[Installation](#installation) · [Quick start](#quick-start) · [Features](#features) · [Development](#development)
-
-</div>
-
----
-
-**Visual Kit** brings your image workflow into Obsidian. Paste multiple screenshots, reuse duplicates, highlight what matters, standardize image sizes, and copy your documentation with images into a rich-text editor.
-
-Built for QA, support, bug reports, and anyone who explains things with screenshots.
-
-```text
-Capture → Paste → Deduplicate → Annotate → Normalize → Document → Copy
-```
+![Visual Kit annotations: mark what matters](docs/community-assets/02-annotate.png)
 
 ## Features
 
-| Feature                         | What you can do                                                                            |
-| :------------------------------ | :----------------------------------------------------------------------------------------- |
-| **Batch paste**                 | Insert multiple images in clipboard order, with configurable file names and folders.       |
-| **Content-based deduplication** | Reuse byte-identical images using SHA-256. Choose Reuse, Ask, or Always save.              |
-| **Built-in image editor**       | Add arrows, rectangles, ellipses, multiline text, freehand drawings, and numbered markers. |
-| **Evidence tools**              | Highlight regions, cover sensitive details with opaque rectangles, and crop images.        |
-| **Editable annotations**        | Move, resize, change properties, and undo/redo. Save editable data alongside the PNG.      |
-| **Consistent image sizes**      | Normalize a note or selection to 400, 600, 800 px, or a custom width.                      |
-| **Rich copy**                   | Copy formatted text and embedded local images, with dimensions, as HTML and plain text.    |
-| **Save & Copy**                 | Save an annotated image and copy it in one action.                                         |
+- **Batch paste** — insert several images at once, in their original order.
+- **Annotate** — add arrows, shapes, text, numbered markers, highlights, and redactions.
+- **Normalize** — give every image in a note or selection a consistent width.
+- **Deduplicate** — reuse identical images instead of saving extra copies.
+- **Rich copy** — copy formatted text and images together into a rich-text editor.
+
+Save annotated images as new PNGs, keep editable annotations, and undo or redo changes as you work. All image processing happens locally.
 
 ## Installation
 
-### From a GitHub release
+Requires **Obsidian Desktop 1.8.0 or later**.
 
-1. Open the [latest release](https://github.com/pedrohf-dev/visual-kit/releases/latest) and download **`main.js`**, **`manifest.json`**, and **`styles.css`**. Do not use GitHub's automatic source-code archives as an installable plugin.
-2. Create the **`visual-kit`** folder in your vault's plugin directory and place the three files inside:
-
-   ```text
-   Your Vault/
-   └── .obsidian/
-       └── plugins/
-           └── visual-kit/
-               ├── main.js
-               ├── manifest.json
-               └── styles.css
-   ```
-
-3. Restart Obsidian.
-4. Open **Settings → Community plugins** and enable **Visual Kit**. If Restricted mode is enabled, allow community plugins first.
-
-The files must sit directly inside `visual-kit`, without a second nested `visual-kit` folder.
-
-> This version requires manual installation. Visual Kit is not yet listed in the community plugin directory. Generated files in `dist` are not tracked in Git; when cloning the repository, build from source below.
-
-### From source
-
-```sh
-npm ci
-npm run build
-```
-
-Copy the generated **`dist/visual-kit`** folder into your vault's `.obsidian/plugins/` directory. Dependencies are bundled; do not copy `node_modules` into Obsidian.
-
-### Upgrading from the previous name
-
-The plugin ID changed from `qa-rich-copy` to `visual-kit`. Disable the old plugin before enabling Visual Kit to avoid duplicate paste/copy handlers. To keep your preferences, copy `data.json` from the old plugin folder into the new one while Obsidian is closed.
-
-Annotation files retain the **`.qrc.json`** extension for compatibility with existing evidence.
+1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/pedrohf-dev/visual-kit/releases/latest).
+2. Place them in `<your-vault>/.obsidian/plugins/visual-kit/`.
+3. Restart Obsidian and enable **Visual Kit** under **Settings → Community plugins**.
 
 ## Quick start
 
-1. **Paste your images.** Open a note and press `Ctrl+V`. Existing byte-identical images are reused by default.
-2. **Set a consistent width.** In the command palette, run **Visual Kit: Normalize image sizes** and choose a width such as `600 px`.
-3. **Annotate a screenshot.** Right-click the image and choose **Annotate**, or place the cursor inside its embed and run **Annotate image**.
-4. **Explain the issue.** Add an arrow, a rectangle, and a text annotation. Choose **Save as new** to preserve the original.
-5. **Update the note.** Replace the embed, keep the original, or insert the annotated image below it.
-6. **Copy your documentation.** Select the content and run **Copy for Ticket**. Without a selection, the command uses the entire note.
-7. **Paste into your destination.** Check the images and formatting in your ticket editor.
+1. Paste screenshots into a note.
+2. Right-click an image and choose **Annotate**.
+3. Add your annotations and choose **Save as new**.
+4. Run **Visual Kit: Normalize image sizes** to set a consistent width.
+5. Select your documentation and run **Visual Kit: Copy for Ticket**.
 
-> Image support depends on the destination editor. End-to-end compatibility with Movidesk, Outlook, and other applications still requires manual validation. Visual Kit does not upload images to those services.
+You can also run **Copy with Images** from the command palette. Without a selection, copy commands use the entire note. Formatting and image support depend on the destination editor.
 
-## Commands
+### Editor shortcuts
 
-All commands appear in the command palette with the **Visual Kit** prefix.
+| Shortcut                         | Action                               |
+| -------------------------------- | ------------------------------------ |
+| `V` / `A` / `R` / `E`            | Select / arrow / rectangle / ellipse |
+| `T` / `D` / `N` / `H`            | Text / draw / number / highlight     |
+| `Ctrl+Z` / `Ctrl+Shift+Z`        | Undo / redo                          |
+| `Ctrl+S`                         | Save                                 |
+| `Ctrl+Shift+C`                   | Copy annotated image                 |
+| `Ctrl` + scroll / `Space` + drag | Zoom / pan                           |
 
-| Command                                | Action                                                                             |
-| :------------------------------------- | :--------------------------------------------------------------------------------- |
-| `Copy with Images`                     | Copy the selection or note with formatted text and embedded local images.          |
-| `Copy for Ticket`                      | Copy rich content, optionally normalizing image sizes only in the exported HTML.   |
-| `Annotate image`                       | Open the image referenced by the embed under the cursor.                           |
-| `Normalize image sizes`                | Choose a width, preset, and scope.                                                 |
-| `Normalize images using default width` | Apply the default width to the selection, or to the note when nothing is selected. |
-| `Rebuild image duplicate index`        | Rebuild the local image hash index.                                                |
+Use `Cmd` instead of `Ctrl` on macOS. Customize global shortcuts in **Settings → Hotkeys**.
 
-### Copy modes
-
-| Mode                     | Behavior in the editor                                |
-| :----------------------- | :---------------------------------------------------- |
-| **Smart Copy** — default | Intercept copying when the selection contains images. |
-| **Dedicated**            | Use rich copy only through the plugin's commands.     |
-| **Always Rich Copy**     | Intercept copying for any text selection.             |
-
-### Image editor shortcuts
-
-| Shortcut                   | Tool or action                           |
-| :------------------------- | :--------------------------------------- |
-| `V` / `A` / `R` / `E`      | Select / arrow / rectangle / ellipse     |
-| `T` / `D` / `N` / `H`      | Text / freehand / number / highlight     |
-| `Delete` or `Backspace`    | Delete selected objects                  |
-| `Ctrl+Z`                   | Undo                                     |
-| `Ctrl+Shift+Z` or `Ctrl+Y` | Redo                                     |
-| `Ctrl+S`                   | Save using the configured save mode      |
-| `Ctrl+Shift+C`             | Copy the rendered image with annotations |
-| `Ctrl` + mouse wheel       | Zoom                                     |
-| `Space` + drag             | Pan                                      |
-
-On macOS, use `Cmd` instead of `Ctrl`. Quick normalization uses `Ctrl+Alt+I` (`Cmd+Option+I` on macOS). Global shortcuts can be changed under **Settings → Hotkeys**.
-
-## Useful settings
-
-| Setting                           | Default                   |
-| :-------------------------------- | :------------------------ |
-| Normalized width                  | `600 px`                  |
-| Apply default width when pasting  | Off                       |
-| Blank line between images         | On                        |
-| Image folder                      | `attachments`             |
-| File name template                | `{note}-{date}-{counter}` |
-| Duplicate action                  | Reuse existing            |
-| Preserve explicit height          | Off                       |
-| Normalize on Copy for Ticket      | Off                       |
-| Preserve editable annotation data | On                        |
-| Save mode                         | New image                 |
-
-Image folders accept values such as `attachments`, `attachments/{note}`, `images`, `same-folder`, or another path relative to the vault.
-
-Normalization changes only the visual size in Markdown, leaving the image file untouched. For example, at `600 px`:
-
-```md
-![[login.png|600]]
-
-![[error.png|600]]
-
-![Dashboard|600](dashboard.png)
-```
-
-PDF, audio, video, Canvas, and note embeds are not resized. Code examples are preserved. A single undo action reverses the normalization.
-
-## Saving and privacy
-
-Processing happens locally, without servers, upload APIs, or remote image editing services.
-
-- **Save as new:** create an annotated PNG without overwriting the original.
-- **Save copy:** choose a custom file name.
-- **Replace original:** overwrite a PNG after confirmation.
-- **Flatten image:** turn the current annotations into pixels; save afterward to write the result.
-- **Editable data:** the `image.qrc.json` file stores the source image and annotation objects for later editing.
-
-> **When sharing redacted evidence, send only the exported PNG.** The original image and `.qrc.json` file may contain the information you covered visually.
-
-Remote images are not downloaded during export. Editing a GIF frame requires confirmation, and GIF files are never overwritten with PNG data. Duplicate detection never deletes existing images automatically.
-
-## Current limitations
-
-### Capability notices
-
-Obsidian's scanner may report **Vault Enumeration** and **Clipboard Access**. These capabilities support the plugin's advertised functionality:
-
-- **Vault enumeration:** local image discovery for duplicate matching, explicit index rebuilds, and resolving an image context menu. File paths are filtered for supported image formats; duplicate indexing reads image bytes, not the contents of unrelated notes. Disable duplicate detection to stop automatic hash indexing. An explicit Rebuild command still scans images when requested.
-- **Clipboard access:** image data is read from paste events in the editor, and formatted text/images are written when copying. There is no background clipboard polling. Use Dedicated copy mode to leave ordinary Ctrl+C unchanged, and disable multi-image paste to leave ordinary paste handling to Obsidian.
-- No vault paths or clipboard contents are sent to an external service.
-
-These notices describe capabilities, not a separate permission sandbox or a claim of malicious behavior.
-
-### Platform and format limits
-
-- **Desktop only.** Windows is the priority platform; macOS and Linux still need real-world validation. Mobile is not included.
-- **Clipboard input varies.** Some applications expose only one image even when multiple items are selected. In those cases, copy the image files instead.
-- **Exact hashes.** The same image with different compression or a different format is treated as a different file.
-- **Partial failures preserve successful items.** Failed items are reported. If a note changes during paste, embeds are appended to the original note.
-- **Manual integration testing remains.** Automated tests do not establish end-to-end behavior inside Obsidian or clipboard compatibility with Movidesk.
+> When sharing redacted evidence, send only the exported PNG. The original image and editable annotation file may still contain the covered information.
 
 ## Development
-
-Use a Node.js version supported by the project dependencies. This implementation was validated with Node.js 24.
 
 ```sh
 npm ci
@@ -197,59 +60,10 @@ npm test
 npm run build
 ```
 
-| Command          | Purpose                                                         |
-| :--------------- | :-------------------------------------------------------------- |
-| `npm run check`  | Check TypeScript types                                          |
-| `npm test`       | Run logic, workflow, HTML export, and rasterization tests       |
-| `npm run build`  | Generate `main.js` and the installable `dist/visual-kit` folder |
-| `npm run format` | Format source code and documentation                            |
-
-```text
-src/
-├── clipboard/    # HTML, images, and clipboard output
-├── duplicates/   # SHA-256 and the local index
-├── editor/       # Fabric.js, tools, history, and persistence
-├── paste/        # Clipboard input, file naming, and batch paste
-├── sizing/       # Embed parsing and size normalization
-├── main.ts       # Commands, events, menus, and settings UI
-└── settings.ts   # Preferences and defaults
-tests/           # Automated tests and test adapters
-docs/            # Product and technical specification
-```
-
-Fabric.js is bundled. Obsidian and Electron are provided by the host application. Visual Kit is licensed under the [MIT License](LICENSE). Both the Visual Kit and Fabric.js license notices are embedded in `main.js`, so they accompany the files installed by Obsidian.
-
-### Release provenance
-
-The release workflow checks that the tag exactly matches the manifest version, installs locked dependencies, runs checks and tests, builds the plugin, and generates GitHub artifact attestations for all three installable assets. It verifies the attestations before publishing the release.
-
-Verify a downloaded asset using GitHub CLI:
-
-```sh
-gh attestation verify main.js --repo pedrohf-dev/visual-kit
-gh attestation verify styles.css --repo pedrohf-dev/visual-kit
-```
-
-See [GitHub's artifact attestation documentation](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations). Only `main.js`, `manifest.json`, and `styles.css` are attached to releases; local build folders may also include documentation.
-
-See [VALIDATION.md](VALIDATION.md) for results and coverage limitations, and the [v2.2 specification](docs/spec-v2.2.md) for product requirements and planned features.
-
-## First-run checklist
-
-- [ ] Paste four images and check their order, file names, and optional default width.
-- [ ] Paste them again and confirm reuse without additional image files.
-- [ ] Add an arrow, rectangle, and text; save and reopen the PNG.
-- [ ] Try undo/redo, cropping, and copying the annotated image.
-- [ ] Normalize a note or selection and undo it in one action.
-- [ ] Copy content with a list, table, code, checkbox, and screenshots.
-- [ ] Paste into your ticket editor and check images, dimensions, and formatting.
-
-## Roadmap
-
-Future features specified for later releases: batch Paste & Annotate, Save & Next, a dedicated screenshot shortcut, perceptual duplicate detection, guided duplicate cleanup, blur/pixelation, section-level normalization, and JPEG/WebP export.
+The installable plugin is generated in `dist/visual-kit`.
 
 ## Support
 
-If Visual Kit helps you document your work, consider supporting its development. Thank you for your support!
+Enjoy using Visual Kit? [Buy me a coffee on Ko-fi](https://ko-fi.com/pedrohlf).
 
-[Buy me a coffee on Ko-fi](https://ko-fi.com/pedrohlf)
+[MIT License](LICENSE)
