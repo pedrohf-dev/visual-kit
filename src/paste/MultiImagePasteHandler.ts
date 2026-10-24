@@ -88,7 +88,7 @@ export class MultiImagePasteHandler {
                   ),
                   item.bytes,
                 ));
-              await index.update(file);
+              if (settings.duplicates) await index.update(file);
               embeds.push(
                 `![[${file.path}${settings.pasteWidth ? "|" + settings.width : ""}]]`,
               );

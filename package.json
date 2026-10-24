@@ -1,6 +1,6 @@
 {
   "name": "obsidian-visual-kit",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": true,
   "scripts": {
     "build": "node esbuild.mjs",
@@ -20,5 +20,6 @@
     "prettier": "^3.9.10",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0"
-  }
+  },
+  "license": "MIT"
 }

@@ -176,3 +176,23 @@ test("paste does not overwrite text changed during processing", async () => {
   await (handler as unknown as { queue: Promise<void> }).queue;
   assert.ok(f.getContent().startsWith("New edits\n\n"));
 });
+
+test("disabled duplicate detection performs no hash indexing during paste", async () => {
+  const f = fixture();
+  f.plugin.settings.duplicates = false;
+  f.plugin.index.update = async () => {
+    throw new Error("Indexing must not run when disabled");
+  };
+  f.plugin.index.find = async () => {
+    throw new Error("Duplicate matching must not run when disabled");
+  };
+  const handler = new MultiImagePasteHandler(f.plugin as never);
+  handler.paste(
+    [new File([png(1)], "image.png")],
+    f.editor as never,
+    f.note as never,
+  );
+  await (handler as unknown as { queue: Promise<void> }).queue;
+  assert.equal(f.getWrites(), 1);
+  assert.match(f.getContent(), /ticket-1500-01.png/);
+});

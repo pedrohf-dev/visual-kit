@@ -1,11 +1,11 @@
 # Implementation validation
 
-Baseline validation performed on October 24, 2026. The English documentation update does not change runtime behavior.
+Baseline validation performed on October 24, 2026. Version 0.7.1 also verifies that disabling duplicate detection skips hash indexing during paste.
 
 | Check                                        | Result                                              |
 | -------------------------------------------- | --------------------------------------------------- |
 | TypeScript (`npm run check`)                 | Passed                                              |
-| Automated tests (`npm test`)                 | 25 passed                                           |
+| Automated tests (`npm test`)                 | 26 passed                                           |
 | Production build (`npm run build`)           | Passed                                              |
 | Dependency audit after the dependency update | 0 reported vulnerabilities at the time of the audit |
 

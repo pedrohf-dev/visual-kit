@@ -195,7 +195,11 @@ export default class VisualKit extends Plugin {
       this.app.workspace.on("window-open", (_win, win) => attach(win.document)),
     );
     const updateImage = (file: import("obsidian").TAbstractFile) => {
-      if (file instanceof TFile && isImage(file.path))
+      if (
+        this.settings.duplicates &&
+        file instanceof TFile &&
+        isImage(file.path)
+      )
         guarded(() => this.index.update(file));
     };
     this.registerEvent(this.app.vault.on("create", updateImage));
@@ -208,7 +212,11 @@ export default class VisualKit extends Plugin {
     this.registerEvent(
       this.app.vault.on("rename", (file, old) => {
         this.index.entries.delete(old);
-        if (file instanceof TFile && isImage(file.path))
+        if (
+          this.settings.duplicates &&
+          file instanceof TFile &&
+          isImage(file.path)
+        )
           guarded(() => this.index.update(file));
       }),
     );

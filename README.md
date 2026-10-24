@@ -6,7 +6,7 @@
 
 Turn screenshots into clear, organized evidence — from capture to ticket.
 
-**Desktop · Local processing · Obsidian 1.8+ · v0.7.0**
+**Desktop · Local processing · Obsidian 1.8+ · v0.7.1**
 
 [Installation](#installation) · [Quick start](#quick-start) · [Features](#features) · [Development](#development)
 
@@ -37,10 +37,10 @@ Capture → Paste → Deduplicate → Annotate → Normalize → Document → Co
 
 ## Installation
 
-### From the packaged build
+### From a GitHub release
 
-1. Extract **`visual-kit-0.7.0.zip`** from the prepared project's `dist` folder.
-2. Copy the **`visual-kit`** folder into your vault's plugin directory:
+1. Open the [latest release](https://github.com/pedrohf-dev/visual-kit/releases/latest) and download **`main.js`**, **`manifest.json`**, and **`styles.css`**. Do not use GitHub's automatic source-code archives as an installable plugin.
+2. Create the **`visual-kit`** folder in your vault's plugin directory and place the three files inside:
 
    ```text
    Your Vault/
@@ -168,6 +168,18 @@ Remote images are not downloaded during export. Editing a GIF frame requires con
 
 ## Current limitations
 
+### Capability notices
+
+Obsidian's scanner may report **Vault Enumeration** and **Clipboard Access**. These capabilities support the plugin's advertised functionality:
+
+- **Vault enumeration:** local image discovery for duplicate matching, explicit index rebuilds, and resolving an image context menu. File paths are filtered for supported image formats; duplicate indexing reads image bytes, not the contents of unrelated notes. Disable duplicate detection to stop automatic hash indexing. An explicit Rebuild command still scans images when requested.
+- **Clipboard access:** image data is read from paste events in the editor, and formatted text/images are written when copying. There is no background clipboard polling. Use Dedicated copy mode to leave ordinary Ctrl+C unchanged, and disable multi-image paste to leave ordinary paste handling to Obsidian.
+- No vault paths or clipboard contents are sent to an external service.
+
+These notices describe capabilities, not a separate permission sandbox or a claim of malicious behavior.
+
+### Platform and format limits
+
 - **Desktop only.** Windows is the priority platform; macOS and Linux still need real-world validation. Mobile is not included.
 - **Clipboard input varies.** Some applications expose only one image even when multiple items are selected. In those cases, copy the image files instead.
 - **Exact hashes.** The same image with different compression or a different format is treated as a different file.
@@ -205,7 +217,20 @@ tests/           # Automated tests and test adapters
 docs/            # Product and technical specification
 ```
 
-Fabric.js is bundled. Obsidian and Electron are provided by the host application. The Fabric license is included in the package as `FABRIC-LICENSE.txt`.
+Fabric.js is bundled. Obsidian and Electron are provided by the host application. Visual Kit is licensed under the [MIT License](LICENSE). Both the Visual Kit and Fabric.js license notices are embedded in `main.js`, so they accompany the files installed by Obsidian.
+
+### Release provenance
+
+The release workflow checks that the tag exactly matches the manifest version, installs locked dependencies, runs checks and tests, builds the plugin, and generates GitHub artifact attestations for all three installable assets. It verifies the attestations before publishing the release.
+
+Verify a downloaded asset using GitHub CLI:
+
+```sh
+gh attestation verify main.js --repo pedrohf-dev/visual-kit
+gh attestation verify styles.css --repo pedrohf-dev/visual-kit
+```
+
+See [GitHub's artifact attestation documentation](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations). Only `main.js`, `manifest.json`, and `styles.css` are attached to releases; local build folders may also include documentation.
 
 See [VALIDATION.md](VALIDATION.md) for results and coverage limitations, and the [v2.2 specification](docs/spec-v2.2.md) for product requirements and planned features.
 

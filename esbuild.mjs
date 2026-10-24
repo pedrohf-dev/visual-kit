@@ -1,5 +1,7 @@
 import { build } from "esbuild";
-import { mkdir, copyFile } from "node:fs/promises";
+import { mkdir, copyFile, readFile } from "node:fs/promises";
+const license = await readFile("LICENSE", "utf8");
+const fabricLicense = await readFile("node_modules/fabric/LICENSE", "utf8");
 await build({
   entryPoints: ["src/main.ts"],
   bundle: true,
@@ -9,11 +11,14 @@ await build({
   target: "es2022",
   outfile: "main.js",
   logLevel: "info",
+  banner: {
+    js: `/*! Visual Kit\n${license}\nBundled Fabric.js license:\n${fabricLicense}\n*/`,
+  },
 });
 await mkdir("dist/visual-kit", { recursive: true });
 for (const file of ["main.js", "manifest.json", "styles.css"])
   await copyFile(file, `dist/visual-kit/${file}`);
-for (const file of ["README.md", "VALIDATION.md"])
+for (const file of ["README.md", "VALIDATION.md", "LICENSE"])
   await copyFile(file, `dist/visual-kit/${file}`);
 await copyFile(
   "node_modules/fabric/LICENSE",
