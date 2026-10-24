@@ -222,3 +222,9 @@ See [VALIDATION.md](VALIDATION.md) for results and coverage limitations, and the
 ## Roadmap
 
 Future features specified for later releases: batch Paste & Annotate, Save & Next, a dedicated screenshot shortcut, perceptual duplicate detection, guided duplicate cleanup, blur/pixelation, section-level normalization, and JPEG/WebP export.
+
+## Support
+
+If Visual Kit helps you document your work, consider supporting its development. Thank you for your support!
+
+[Buy me a coffee on Ko-fi](https://ko-fi.com/pedrohlf)
