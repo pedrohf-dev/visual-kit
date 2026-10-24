@@ -1,4 +1,6 @@
-## Visual Kit 0.7.2
+## Visual Kit 0.7.4
+
+- Synchronize the manifest, package metadata, compatibility map, and installable release assets for version 0.7.4.
 
 - Fix Obsidian source-review errors: use supported styling helpers and native settings headings.
 - Add searchable settings on Obsidian 1.13+, with a fallback for older supported versions.
