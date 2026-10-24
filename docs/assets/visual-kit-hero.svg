@@ -1,0 +1,100 @@
+<svg width="1600" height="800" viewBox="0 0 1600 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="40" x2="1480" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#12101B"/>
+      <stop offset="0.52" stop-color="#1A1530"/>
+      <stop offset="1" stop-color="#0E1B24"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="28" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="800" rx="42" fill="url(#bg)"/>
+  <circle cx="1430" cy="90" r="260" fill="#7C3AED" opacity="0.10"/>
+  <circle cx="1350" cy="720" r="310" fill="#0891B2" opacity="0.10"/>
+  <circle cx="150" cy="720" r="260" fill="#6D28D9" opacity="0.08"/>
+
+  <g transform="translate(110 120)">
+    <rect x="0" y="0" width="82" height="82" rx="22" fill="url(#accent)"/>
+    <path d="M23 23H59V59H23V23Z" stroke="white" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M32 50L40 42L47 48L58 35" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M54 26L62 18" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <path d="M62 18L60 29" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <path d="M62 18L51 20" stroke="white" stroke-width="5" stroke-linecap="round"/>
+
+    <text x="0" y="158" fill="white" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="86" font-weight="800" letter-spacing="-3">Visual Kit</text>
+    <text x="0" y="218" fill="#C8C3D8" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30" font-weight="500">
+      Screenshots, annotations, and documentation — inside Obsidian.
+    </text>
+    <text x="0" y="278" fill="#8F8AA3" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="25">
+      Paste. Edit. Normalize. Copy. No extra apps.
+    </text>
+
+    <g transform="translate(0 340)">
+      <rect x="0" y="0" width="146" height="54" rx="27" fill="#241C3E" stroke="#6D4FC2"/>
+      <text x="73" y="35" text-anchor="middle" fill="#DDD3FF" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="650">Paste</text>
+      <path d="M158 27H194" stroke="#655C77" stroke-width="3" stroke-linecap="round"/>
+      <path d="M184 18L194 27L184 36" stroke="#655C77" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <rect x="210" y="0" width="168" height="54" rx="27" fill="#241C3E" stroke="#6D4FC2"/>
+      <text x="294" y="35" text-anchor="middle" fill="#DDD3FF" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="650">Annotate</text>
+      <path d="M390 27H426" stroke="#655C77" stroke-width="3" stroke-linecap="round"/>
+      <path d="M416 18L426 27L416 36" stroke="#655C77" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <rect x="442" y="0" width="172" height="54" rx="27" fill="#182B34" stroke="#2B8CA4"/>
+      <text x="528" y="35" text-anchor="middle" fill="#C9F7FF" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="650">Normalize</text>
+      <path d="M626 27H662" stroke="#655C77" stroke-width="3" stroke-linecap="round"/>
+      <path d="M652 18L662 27L652 36" stroke="#655C77" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <rect x="678" y="0" width="146" height="54" rx="27" fill="#182B34" stroke="#2B8CA4"/>
+      <text x="751" y="35" text-anchor="middle" fill="#C9F7FF" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="21" font-weight="650">Copy</text>
+    </g>
+
+    <g transform="translate(0 438)">
+      <rect x="0" y="0" width="228" height="46" rx="23" fill="#191723" stroke="#373142"/>
+      <circle cx="25" cy="23" r="6" fill="#22D3EE"/>
+      <text x="43" y="30" fill="#B9B4C8" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18">100% local processing</text>
+
+      <rect x="244" y="0" width="170" height="46" rx="23" fill="#191723" stroke="#373142"/>
+      <circle cx="269" cy="23" r="6" fill="#8B5CF6"/>
+      <text x="287" y="30" fill="#B9B4C8" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18">Desktop plugin</text>
+    </g>
+  </g>
+
+  <g transform="translate(930 118)" filter="url(#shadow)">
+    <rect x="0" y="0" width="540" height="565" rx="28" fill="#17151E" stroke="#3B3547"/>
+    <rect x="0" y="0" width="540" height="64" rx="28" fill="#201D29"/>
+    <rect x="0" y="40" width="540" height="24" fill="#201D29"/>
+    <circle cx="31" cy="31" r="7" fill="#EF6A6A"/>
+    <circle cx="54" cy="31" r="7" fill="#E6B85C"/>
+    <circle cx="77" cy="31" r="7" fill="#68C47D"/>
+    <text x="112" y="39" fill="#AFA9BC" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18">Issue notes.md</text>
+
+    <rect x="28" y="92" width="484" height="310" rx="18" fill="#24212C"/>
+    <rect x="58" y="126" width="424" height="38" rx="8" fill="#322E3B"/>
+    <rect x="58" y="181" width="270" height="20" rx="6" fill="#393443"/>
+    <rect x="58" y="217" width="340" height="20" rx="6" fill="#393443"/>
+    <rect x="58" y="253" width="200" height="20" rx="6" fill="#393443"/>
+    <rect x="316" y="230" width="136" height="58" rx="12" fill="#3B3448" stroke="#8B5CF6" stroke-width="4"/>
+    <path d="M406 181L375 225" stroke="#F87171" stroke-width="6" stroke-linecap="round"/>
+    <path d="M375 225L378 208M375 225L391 219" stroke="#F87171" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="282" y="302" width="176" height="48" rx="12" fill="#442A2F"/>
+    <text x="370" y="333" text-anchor="middle" fill="#FFC7CC" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700">Check this state</text>
+
+    <g transform="translate(28 430)">
+      <rect x="0" y="0" width="150" height="54" rx="15" fill="#2A243B" stroke="#5F4A9A"/>
+      <text x="75" y="34" text-anchor="middle" fill="#DCD3F6" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="650">Annotate</text>
+      <rect x="166" y="0" width="150" height="54" rx="15" fill="#19313B" stroke="#2D8298"/>
+      <text x="241" y="34" text-anchor="middle" fill="#D1F6FF" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="650">Normalize</text>
+      <rect x="332" y="0" width="180" height="54" rx="15" fill="url(#accent)"/>
+      <text x="422" y="34" text-anchor="middle" fill="white" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="750">Copy with Images</text>
+    </g>
+
+    <text x="28" y="528" fill="#8E879B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="17">Keep your workflow in one place.</text>
+  </g>
+</svg>
