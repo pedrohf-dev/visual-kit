@@ -1,453 +1,111 @@
-# Obsidian QA Rich Copy — Specification v2.2
+# Visual Kit — Product & Technical Specification v2.2
 
-## 1. Visão do produto
+This English edition consolidates the requirements of the original v2.2 specification under the Visual Kit name (previously Obsidian QA Rich Copy). It describes product requirements, including future work; it is not a claim that every planned feature is implemented. See the README and VALIDATION.md for current behavior and validation status.
 
-Obsidian QA Rich Copy é um plugin desktop para Obsidian focado em profissionais que trabalham com:
+## 1. Product vision
 
-- análise de qualidade;
-- suporte;
-- documentação;
-- reporte de bugs;
-- evidências;
-- testes;
-- tickets.
+Visual Kit is an Obsidian Desktop plugin for QA analysts, software testers, support specialists, developers, and anyone preparing documentation, bug reports, tickets, or visual evidence. The product should not be limited to QA-specific use cases.
 
-O plugin deve fornecer um fluxo integrado para:
-
-1. trabalhar com screenshots;
-2. colar uma ou várias imagens de uma vez;
-3. detectar imagens duplicadas;
-4. anotar imagens;
-5. redimensionar imagens;
-6. padronizar o tamanho das imagens de uma nota;
-7. escrever documentação ao redor delas;
-8. copiar texto + imagens;
-9. colar tudo diretamente no Movidesk ou outro editor rich-text.
-
-O objetivo principal é eliminar ferramentas externas durante a criação de evidências.
-
-Fluxo ideal:
+The goal is to keep the evidence workflow inside Obsidian:
 
 ```text
-Screenshot(s)
-    ↓
-Colar no Obsidian
-    ↓
-Detectar duplicatas
-    ↓
-Salvar e inserir automaticamente
-    ↓
-Anotar
-    ↓
-Adicionar seta / retângulo / texto
-    ↓
-Padronizar tamanho das imagens
-    ↓
-Escrever explicação
-    ↓
-Selecionar tudo
-    ↓
-Copy with Images
-    ↓
-Movidesk
+Capture → Paste → Deduplicate → Annotate → Normalize → Explain → Copy → Ticket
 ```
 
----
-
-# 2. Problemas resolvidos
-
-O plugin resolve cinco problemas relacionados.
-
-## Problema A — Clipboard
-
-Ao copiar conteúdo do Obsidian contendo:
-
-```md
-![[imagem.png]]
-```
-
-o destino pode receber apenas Markdown em vez da imagem real.
-
-O plugin deve copiar texto formatado e imagens reais usando rich clipboard.
-
-## Problema B — Anotação de evidências
-
-Durante análise de qualidade é comum precisar:
-
-- apontar um botão;
-- destacar uma área;
-- desenhar um retângulo;
-- inserir uma seta;
-- numerar passos;
-- escrever observações;
-- ocultar dados sensíveis.
-
-O plugin deve permitir realizar essas operações sem sair do Obsidian.
-
-## Problema C — Padronização visual
-
-Notas contendo vários screenshots frequentemente ficam com tamanhos diferentes.
-
-O plugin deve permitir transformar rapidamente todas as imagens da nota para o mesmo tamanho visual.
-
-## Problema D — Colagem de várias evidências
-
-Durante testes, o usuário pode possuir várias imagens no clipboard ou copiar vários arquivos de uma vez.
-
-O Obsidian QA Rich Copy deve permitir inserir todas em uma única operação.
-
-## Problema E — Imagens duplicadas
-
-É comum copiar acidentalmente o mesmo screenshot mais de uma vez.
-
-O plugin deve detectar conteúdo de imagem duplicado e evitar criar arquivos redundantes quando possível.
-
----
-
-# 3. Público-alvo
-
-Principalmente:
-
-- QA Analysts;
-- Software Testers;
-- suporte técnico;
-- analistas de atendimento;
-- desenvolvedores;
-- documentação técnica.
-
-O produto não deve ser limitado especificamente a QA.
-
----
-
-# 4. Plataforma
-
-MVP:
-
-- Obsidian Desktop;
-- Windows como plataforma prioritária;
-- macOS;
-- Linux.
-
-Mobile não faz parte do escopo inicial.
-
----
-
-# 5. Privacidade
-
-Todo processamento deve acontecer localmente.
-
-Não utilizar:
-
-- servidores externos;
-- APIs de upload;
-- serviços de edição remota;
-- cloud processing.
-
-Screenshots podem conter informações internas ou confidenciais.
-
----
-
-# 6. Workflow principal
-
-O usuário deve poder:
-
-1. copiar uma ou várias imagens;
-2. colar no Obsidian;
-3. deixar o plugin salvar os arquivos automaticamente;
-4. detectar duplicatas;
-5. inserir todos os embeds;
-6. abrir uma imagem em `Annotate`;
-7. adicionar retângulo;
-8. adicionar seta;
-9. adicionar texto;
-10. salvar;
-11. normalizar tamanhos;
-12. selecionar o conteúdo;
-13. executar `Copy with Images`;
-14. colar no Movidesk.
-
----
-
-# 7. Editor de imagens
-
-Adicionar um editor integrado de imagens.
-
-Comando:
-
-**QA Rich Copy: Annotate image**
-
-Disponível através de:
-
-- Command Palette;
-- botão/context menu da imagem;
-- menu de contexto do File Explorer;
-- hotkey configurável.
-
----
-
-# 8. Ferramentas obrigatórias do editor
-
-## Selection Tool
-
-Permite:
-
-- selecionar objeto;
-- mover;
-- redimensionar;
-- alterar propriedades;
-- excluir.
-
-Atalho sugerido:
-
-`V`
-
-## Arrow
-
-Propriedades:
-
-- cor;
-- espessura;
-- tamanho da ponta;
-- opacidade.
-
-Atalho:
-
-`A`
-
-## Rectangle
-
-Opções:
-
-- apenas borda;
-- preenchimento;
-- preenchimento transparente;
-- espessura;
-- cor;
-- opacidade;
-- cantos arredondados opcionalmente.
-
-Atalho:
-
-`R`
-
-## Ellipse
-
-Atalho:
-
-`E`
-
-## Text
-
-Suportar:
-
-- múltiplas linhas;
-- tamanho;
-- cor;
-- background;
-- bold;
-- alinhamento.
-
-Atalho:
-
-`T`
-
-## Freehand
-
-Atalho:
-
-`D`
-
-Propriedades:
-
-- espessura;
-- cor;
-- opacidade.
-
----
-
-# 9. Ferramentas específicas para QA
-
-## Number Marker
-
-Criar marcadores numerados automaticamente.
-
-Exemplo:
-
-```text
-1
-2
-3
-4
-```
-
-## Highlight
-
-Criar área semitransparente para chamar atenção para uma região.
-
-## Redaction
-
-Ferramenta para esconder informações sensíveis.
-
-Exemplos:
-
-- nome;
-- CPF;
-- email;
-- telefone;
-- token;
-- endereço;
-- informações internas.
-
-Modo inicial:
-
-- retângulo sólido.
-
-Futuro:
-
-- blur;
-- pixelate.
-
----
-
-# 10. Crop
-
-Permitir crop antes ou depois de adicionar anotações.
-
----
-
-# 11. Undo / Redo
-
-Obrigatório.
-
-Atalhos:
-
-```text
-Ctrl+Z
-Ctrl+Shift+Z
-```
-
-ou:
-
-```text
-Ctrl+Y
-```
-
----
-
-# 12. Zoom e navegação
-
-Suportar:
-
-```text
-Ctrl + Wheel → zoom
-Wheel → scroll
-Space + Drag → pan
-```
-
-Adicionar:
-
-- Fit image;
-- 100%;
-- Zoom in;
-- Zoom out.
-
----
-
-# 13. Cores rápidas
-
-Paleta padrão:
-
-- vermelho;
-- amarelo;
-- verde;
-- azul;
-- branco;
-- preto.
-
-O plugin deve lembrar a última cor utilizada.
-
----
-
-# 14. Presets de QA
-
-Presets iniciais:
-
-### Error
-
-Vermelho.
-
-### Attention
-
-Amarelo.
-
-### Success
-
-Verde.
-
-### Info
-
-Azul.
-
----
-
-# 15. Salvamento
-
-## Save as new image
-
-Default recomendado.
-
-```text
-login.png
-→
-login-annotated.png
-```
-
-## Replace original
-
-Sobrescrever original mediante confirmação.
-
-## Save copy
-
-Permitir nome personalizado.
-
----
-
-# 16. Edição não destrutiva
-
-Preferencialmente armazenar dados editáveis separadamente:
-
-```text
-login-annotated.png
-login-annotated.qrc.json
-```
-
----
-
-# 17. Flatten
-
-Adicionar operação:
-
-**Flatten image**
-
-Transforma as anotações em pixels definitivos.
-
----
-
-# 18. Atualização automática do embed
-
-Após salvar como nova imagem:
-
-```text
-Replace
-Keep original
-Insert annotated below
-```
-
----
-
-# 19. Quick Annotate
-
-Menu de contexto:
+Users should not need to save each screenshot manually, paste images one by one, create redundant files, open an external image editor, resize every image separately, repair embeds, or copy each image individually into a ticket.
+
+## 2. Platform and privacy
+
+- Target Obsidian Desktop, with Windows as the priority platform, followed by macOS and Linux.
+- Mobile is outside the initial scope.
+- Process images locally. Do not use external servers, upload APIs, remote editors, or cloud processing.
+- Never automatically delete existing images because they share a hash.
+- Exact deduplication may reuse existing files; cleanup of existing files requires explicit user action.
+
+## 3. Problems addressed
+
+| Problem                                                | Required outcome                                                        |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| Image embeds copied as Markdown                        | Copy formatted text and actual embedded image data.                     |
+| External annotation tools interrupt work               | Annotate screenshots without leaving Obsidian.                          |
+| Inconsistent screenshot sizes                          | Normalize the visual width of images in a note or selection.            |
+| Multiple screenshots require separate paste operations | Process all compatible clipboard image items as one batch.              |
+| Repeated pastes create redundant files                 | Detect identical binary content and reuse an existing image by default. |
+
+## 4. Primary workflow
+
+1. Copy one or more screenshots or image files.
+2. Paste into an Obsidian note.
+3. Save files automatically, checking for duplicates first.
+4. Insert the image embeds in clipboard order.
+5. Open an image in Annotate.
+6. Add a rectangle, arrow, and text annotation.
+7. Save the annotated image and update its embed.
+8. Normalize image widths.
+9. Write the explanation around the evidence.
+10. Select the content and run Copy with Images or Copy for Ticket.
+11. Paste the result into Movidesk or another rich-text editor.
+
+## 5. Integrated image editor
+
+Expose **Annotate image** through the command palette, image context menu, file explorer context menu, and a user-configurable hotkey.
+
+### Required tools
+
+| Tool          | Requirements                                                                            | Shortcut |
+| ------------- | --------------------------------------------------------------------------------------- | -------- |
+| Select        | Select, move, resize, change properties, and delete objects                             | V        |
+| Arrow         | Color, stroke width, arrowhead size, opacity                                            | A        |
+| Rectangle     | Outline, fill, transparent fill, stroke width, color, opacity; optional rounded corners | R        |
+| Ellipse       | Elliptical annotation                                                                   | E        |
+| Text          | Multiline text, font size, color, background, bold, alignment                           | T        |
+| Freehand      | Stroke width, color, opacity                                                            | D        |
+| Number marker | Automatically numbered markers                                                          | N        |
+| Highlight     | Semitransparent region                                                                  | H        |
+| Redaction     | Solid rectangle covering sensitive information                                          | —        |
+| Crop          | Crop before or after adding annotations                                                 | —        |
+
+Blur and pixelation are future redaction modes. Initial redaction uses a fully opaque rectangle.
+
+### History and navigation
+
+- Undo: Ctrl+Z.
+- Redo: Ctrl+Shift+Z or Ctrl+Y.
+- Ctrl+wheel: zoom.
+- Wheel: scroll.
+- Space+drag: pan.
+- Provide Fit image, 100%, Zoom in, and Zoom out controls.
+- Use the platform modifier equivalent on macOS.
+
+### Colors and presets
+
+Provide red, yellow, green, blue, white, and black. Remember the last color used.
+
+| Preset    | Color  |
+| --------- | ------ |
+| Error     | Red    |
+| Attention | Yellow |
+| Success   | Green  |
+| Info      | Blue   |
+
+## 6. Saving and editable annotations
+
+- **Save as new image:** recommended default, for example `login.png` → `login-annotated.png`.
+- **Replace original:** require confirmation before overwriting.
+- **Save copy:** allow a custom file name.
+- **Non-destructive editing:** preferably store editable data separately, for example `login-annotated.png` and `login-annotated.qrc.json`.
+- **Flatten image:** convert annotation objects into permanent pixels.
+- After saving a new image, offer Replace, Keep original, and Insert annotated below for the note embed.
+- **Copy** in the editor renders the image and annotations to the clipboard.
+- **Save & Copy** follows render → save → clipboard.
+- Default export format: PNG. JPEG and WebP export are future work.
+- Never silently replace an animated GIF with a static image.
+
+Editable sidecars may retain the original image, including information hidden by redaction. Share the flattened PNG rather than the original or sidecar when distributing redacted evidence.
+
+## 7. Quick actions
+
+The image context menu should expose:
 
 ```text
 Annotate
@@ -458,155 +116,59 @@ Resize
 Normalize note images
 ```
 
----
+QA workflow quick actions should include Annotate, Mark error, Add arrow, Add rectangle, Add number, Resize, Normalize note images, and Copy for ticket.
 
-# 20. Copy Annotated Image
+## 8. Rich copy and ticket export
 
-Dentro do editor:
+Copy both `text/plain` and `text/html`, with real embedded image data instead of visible Markdown image references.
 
-**Copy**
-
-Deve renderizar imagem + anotações e colocar o resultado no clipboard.
-
----
-
-# 21. Save + Copy
-
-Ação:
-
-**Save & Copy**
-
-Fluxo:
-
-```text
-render
-→ save
-→ clipboard
-```
-
----
-
-# 22. Copy with Images
-
-Transformar:
+Example input:
 
 ```md
-Texto
+Description
 
 ![[evidence.png|500]]
 
-Texto
+Additional context
 ```
 
-em clipboard contendo:
-
-```text
-text/plain
-text/html
-```
-
-com imagem real embutida.
-
----
-
-# 23. Resize do Obsidian
-
-Respeitar:
+Respect both width-only and explicit width/height embeds:
 
 ```md
 ![[image.png|500]]
-```
-
-e:
-
-```md
 ![[image.png|500x300]]
 ```
 
----
+Preserve bold, italic, headings, links, ordered and unordered lists, tables, code, blockquotes, and checkboxes.
 
-# 24. Normalize Image Sizes
+### Copy modes
 
-Adicionar comando:
+- Dedicated.
+- Smart Copy — default.
+- Always Rich Copy.
 
-**QA Rich Copy: Normalize image sizes**
-
-Exemplo:
-
-```md
-![[login.png|820]]
-![[erro.png]]
-![[dashboard.png|450]]
-```
-
-Com largura escolhida:
+### Copy for Ticket pipeline
 
 ```text
-600px
+Selection → Render Markdown → Resolve images → Apply dimensions
+          → Optional normalization → Embed images → Clean HTML → Clipboard
 ```
 
-Resultado:
+Compatibility priorities from the original specification:
 
-```md
-![[login.png|600]]
-![[erro.png|600]]
-![[dashboard.png|600]]
-```
+1. Movidesk.
+2. Outlook.
+3. Gmail, Google Docs, Word, Slack, and other rich-text editors.
 
-Essa operação deve alterar apenas o tamanho visual definido no Markdown.
+These are compatibility targets, not verified compatibility claims. Destination editors may reject or transform embedded image data.
 
----
+## 9. Image size normalization
 
-# 25. Normalize — interface
+Provide **Normalize image sizes** with a width input, Current note / Current selection scope, Cancel, and Apply.
 
-Modal:
+Provide **Normalize images using default width**, with a suggested Ctrl+Alt+I shortcut and an optional ribbon button.
 
-```text
-Normalize image sizes
-
-Width:
-[ 600 ] px
-
-Scope:
-(o) Current note
-( ) Current selection
-
-[ Cancel ] [ Apply ]
-```
-
----
-
-# 26. Normalize — hotkey rápido
-
-Comando:
-
-**Normalize images using default width**
-
-Configuração:
-
-```text
-Default image width: 600px
-```
-
-Hotkey sugerido:
-
-```text
-Ctrl+Alt+I
-```
-
----
-
-# 27. Normalize — botão
-
-Adicionar opcionalmente botão na ribbon:
-
-**Normalize image sizes**
-
----
-
-# 28. Normalize — comportamento
-
-Suportar:
+Supported syntax:
 
 ```md
 ![[image.png]]
@@ -615,204 +177,47 @@ Suportar:
 ![](image.png)
 ```
 
-Default:
+Requirements:
 
-- aplicar largura;
-- preservar aspect ratio;
-- remover altura explícita salvo configuração contrária.
+- Change only visual dimensions in Markdown, never image pixels.
+- Apply width and preserve aspect ratio by default.
+- Remove explicit height unless Preserve explicit height is enabled.
+- Undo the entire normalization in one editor operation.
+- Do not change PDF, audio, video, Canvas, or embedded notes.
+- Current section scope is future work.
 
----
+| Setting or preset            | Default / value              |
+| ---------------------------- | ---------------------------- |
+| Default normalized width     | 600 px                       |
+| Preserve explicit height     | Off                          |
+| Normalize on Copy for Ticket | Off                          |
+| Small                        | 400 px                       |
+| Medium                       | 600 px                       |
+| Large                        | 800 px                       |
+| Original                     | Remove visual size overrides |
 
-# 29. Normalize — escopo
+Normalize on Copy for Ticket must affect only the exported HTML, leaving the source Markdown unchanged.
 
-Suportar:
+## 10. Multi-image paste
 
-- Current note;
-- Current selection.
-
-Futuro:
-
-- Current section.
-
----
-
-# 30. Normalize — undo
-
-`Ctrl+Z` deve desfazer toda a normalização em uma única operação.
-
----
-
-# 31. Normalize — imagens especiais
-
-Não alterar:
-
-- PDF;
-- áudio;
-- vídeo;
-- Canvas;
-- notas embedadas.
-
----
-
-# 32. Normalize — configurações
+Recognize multiple image items, multiple image files, or a compatible combination exposed by the clipboard. Preserve their original order.
 
 ```text
-Default normalized width: 600
-Preserve explicit height: OFF
-Normalize on Copy for Ticket: OFF
+Clipboard → Enumerate items → Validate formats → Check duplicates
+          → Generate names → Save files → Insert embeds
 ```
 
-Presets:
+Settings:
 
-```text
-Small 400px
-Medium 600px
-Large 800px
-Original
-```
+- Paste multiple images.
+- Apply default width to pasted images — off by default.
+- Insert a blank line between pasted images — on by default.
+- File name template, default `{note}-{date}-{counter}`.
+- Default image folder.
 
----
+Supported folder choices include `attachments/`, `attachments/{note}/`, `images/`, `same-folder`, and a custom vault-relative folder.
 
-# 33. Normalize on Copy for Ticket
-
-Opcionalmente normalizar somente o HTML exportado, sem alterar o Markdown original.
-
----
-
-# 34. Colar várias imagens de uma vez
-
-Adicionar suporte a múltiplas imagens em uma única operação de paste.
-
-O plugin deve reconhecer quando o clipboard contém:
-
-- várias imagens;
-- vários arquivos de imagem;
-- uma combinação compatível de arquivos/imagens.
-
-Exemplo:
-
-```text
-imagem1.png
-imagem2.png
-imagem3.png
-imagem4.png
-```
-
-Ao colar:
-
-```text
-Ctrl+V
-```
-
-o plugin deve salvar e inserir todas.
-
-Resultado:
-
-```md
-![[imagem1.png]]
-
-![[imagem2.png]]
-
-![[imagem3.png]]
-
-![[imagem4.png]]
-```
-
-A ordem original deve ser preservada.
-
----
-
-# 35. Multi-image Paste — comportamento
-
-O fluxo deve ser:
-
-```text
-Clipboard
-↓
-Enumerate image items
-↓
-Validate formats
-↓
-Check duplicates
-↓
-Generate filenames
-↓
-Save files
-↓
-Insert embeds
-```
-
-As imagens devem ser processadas em lote.
-
----
-
-# 36. Multi-image Paste — tamanho automático
-
-Adicionar configuração:
-
-**Apply default width to pasted images**
-
-Exemplo:
-
-```text
-Default width: 600px
-```
-
-Quando ativado:
-
-```md
-![[imagem1.png|600]]
-
-![[imagem2.png|600]]
-
-![[imagem3.png|600]]
-```
-
-Default:
-
-`OFF`
-
----
-
-# 37. Multi-image Paste — espaçamento
-
-Configuração:
-
-**Insert blank line between pasted images**
-
-Default:
-
-`ON`
-
-Resultado:
-
-```md
-![[imagem1.png]]
-
-![[imagem2.png]]
-
-![[imagem3.png]]
-```
-
-Em vez de:
-
-```md
-![[imagem1.png]]
-![[imagem2.png]]
-![[imagem3.png]]
-```
-
----
-
-# 38. Multi-image Paste — naming
-
-Permitir template:
-
-```text
-{note}-{date}-{counter}
-```
-
-Exemplo:
+File names must be unique, even when the configured template produces a collision. Example:
 
 ```text
 ticket-1423-2026-10-24-01.png
@@ -820,760 +225,127 @@ ticket-1423-2026-10-24-02.png
 ticket-1423-2026-10-24-03.png
 ```
 
-O contador deve garantir nomes únicos.
+For large batches, display progress such as `Saving images: 4/12` and avoid unnecessarily blocking the interface.
 
----
+Partial failure must preserve successful images. Report success/failure counts and identify each failed item.
 
-# 39. Multi-image Paste — progresso
+### Future batch annotation
 
-Para muitas imagens, exibir feedback:
+**Paste images and annotate** should save the entire batch, open the first image, and offer **Save & Next** to review subsequent images.
 
-```text
-Saving images: 4/12
-```
+## 11. Duplicate detection
 
-Não bloquear desnecessariamente a interface do Obsidian.
+Calculate SHA-256 from the complete binary image content. Do not rely on file name, size, timestamps, or resolution alone.
 
----
+| Duplicate action         | Behavior                                                           |
+| ------------------------ | ------------------------------------------------------------------ |
+| Reuse existing — default | Create no new image file; insert a reference to an existing match. |
+| Ask                      | Show matching paths and offer Reuse, Save duplicate, or Cancel.    |
+| Always save              | Save a separate file with a unique name.                           |
 
-# 40. Multi-image Paste — falha parcial
+When multiple files have the same content, prefer:
 
-Se uma imagem falhar:
+1. A match in the configured image attachment folder.
+2. An image associated with the current note.
+3. The image closest to the note's folder.
+4. The first remaining valid match.
 
-```text
-3 images pasted successfully.
-1 image failed.
-```
+In Ask mode, let the user choose among matching paths.
 
-O erro deve indicar qual item falhou.
+### Local index
 
-Não descartar imagens já salvas com sucesso.
+Maintain a rebuildable local hash index to avoid hashing every file on every paste. The index is a cache, never the sole source of truth: validate that matches still exist and have matching content.
 
----
+Update the index when an image is created, deleted, renamed, or modified. Provide **Rebuild image duplicate index**.
 
-# 41. Paste & Annotate em lote
+```ts
+interface ImageHashEntry {
+  hash: string;
+  path: string;
+  size: number;
+  modifiedAt?: number;
+}
 
-Adicionar futuramente:
-
-**Paste images and annotate**
-
-Fluxo:
-
-```text
-colar 4 imagens
-↓
-salvar todas
-↓
-abrir primeira no editor
-↓
-Save & Next
-↓
-segunda
-↓
-Save & Next
-↓
-...
-```
-
-Isso permite revisar rapidamente uma sequência de evidências.
-
----
-
-# 42. Detecção de duplicatas
-
-Adicionar sistema de detecção de imagens duplicadas.
-
-O objetivo é impedir arquivos como:
-
-```text
-erro.png
-erro-1.png
-erro-2.png
-erro-3.png
-```
-
-quando todas possuem exatamente o mesmo conteúdo.
-
----
-
-# 43. Duplicatas — hash
-
-Calcular um hash do conteúdo binário da imagem.
-
-Sugestão:
-
-```text
-SHA-256
-```
-
-Exemplo:
-
-```text
-imagem A → hash abc123...
-imagem B → hash abc123...
-```
-
-Se os hashes forem iguais:
-
-```text
-duplicate = true
-```
-
-Não confiar apenas em:
-
-- nome;
-- tamanho;
-- data;
-- resolução.
-
-A comparação deve ser baseada no conteúdo.
-
----
-
-# 44. Duplicatas — comportamento padrão
-
-Quando uma imagem idêntica já existir no Vault:
-
-```text
-Duplicate image detected
-```
-
-Default recomendado:
-
-**Reuse existing image**
-
-Ou seja, não criar novo arquivo.
-
-Apenas inserir referência para o arquivo existente.
-
-Exemplo:
-
-Arquivo já existente:
-
-```text
-attachments/login-error.png
-```
-
-Novo paste idêntico:
-
-```md
-![[attachments/login-error.png]]
-```
-
-Nenhuma cópia adicional deve ser criada.
-
----
-
-# 45. Duplicatas — opções
-
-Configuração:
-
-**When duplicate image is detected**
-
-Opções:
-
-### Reuse existing
-
-Default.
-
-### Ask
-
-Mostrar:
-
-```text
-This image already exists:
-
-attachments/login-error.png
-
-[ Reuse ]
-[ Save duplicate ]
-[ Cancel ]
-```
-
-### Always save
-
-Comportamento tradicional.
-
----
-
-# 46. Duplicatas — múltiplos matches
-
-Se o mesmo conteúdo existir em vários locais:
-
-```text
-attachments/a.png
-ticket-1/a.png
-archive/a.png
-```
-
-Preferir:
-
-1. imagem na pasta de attachments configurada;
-2. imagem associada à nota atual;
-3. imagem mais próxima da nota;
-4. primeira correspondência válida.
-
-No modo `Ask`, mostrar opções ao usuário.
-
----
-
-# 47. Duplicatas — index local
-
-Para evitar recalcular todos os arquivos a cada paste, manter um índice local.
-
-Exemplo conceitual:
-
-```json
-{
-  "sha256:abc123": "attachments/login.png",
-  "sha256:def456": "attachments/dashboard.png"
+interface DuplicateResult {
+  duplicate: boolean;
+  existingPaths: string[];
 }
 ```
 
-Esse índice deve ser recriável.
+An edited or annotated image with different bytes is a different image, even if it was derived from an existing source.
 
-Não deve ser fonte exclusiva da verdade.
+### Future duplicate features
 
-Se necessário, validar se o arquivo ainda existe.
+- Optional perceptual hashing for visually similar images, including different formats or compression levels.
+- **Find duplicate images** to present groups across the vault.
+- Explicit Keep first, Keep selected, Replace references, and Delete duplicates actions.
+- Update relevant references before deleting duplicates.
+- Never perform automatic destructive cleanup.
 
----
+## 12. Settings groups
 
-# 48. Duplicatas — atualização do índice
+| Group        | Settings                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| Clipboard    | Copy mode, preserve formatting, preserve resize, Movidesk optimization                       |
+| Editor       | Default color, line width, font size, save mode, annotation folder, editable annotation data |
+| Image sizing | Default width, preserve explicit height, normalize on ticket copy, presets                   |
+| Paste        | Multi-image paste, default width, blank lines, naming template, image folder                 |
+| Duplicates   | Enable detection, Reuse / Ask / Always save, local hash index                                |
+| QA           | Auto-increment markers, screenshot naming, quick tools, redaction style                      |
 
-Atualizar índice quando:
+## 13. Suggested architecture
 
-- imagem é adicionada;
-- imagem é removida;
-- imagem é renomeada;
-- imagem é modificada.
-
-Também disponibilizar comando:
-
-**QA Rich Copy: Rebuild image duplicate index**
-
----
-
-# 49. Duplicatas — imagem modificada
-
-Se uma imagem for anotada ou editada:
-
-```text
-original hash ≠ edited hash
-```
-
-ela deve ser considerada uma imagem diferente.
-
-Exemplo:
-
-```text
-login.png
-login-annotated.png
-```
-
-não são duplicatas mesmo que derivem da mesma fonte.
-
----
-
-# 50. Duplicatas — hash perceptual futuro
-
-Futuro:
-
-Adicionar detecção de imagens visualmente quase idênticas usando perceptual hash.
-
-Exemplos:
-
-- mesma imagem em PNG e JPEG;
-- mesma imagem com compressão diferente;
-- screenshot com diferença mínima.
-
-Isso deve ser opcional.
-
-O MVP deve usar apenas hash exato.
-
----
-
-# 51. Duplicatas — limpeza do Vault
-
-Adicionar futuramente:
-
-**Find duplicate images**
-
-Esse comando analisa o Vault e apresenta grupos.
-
-Exemplo:
-
-```text
-Duplicate group #1
-
-attachments/a.png
-attachments/a-copy.png
-ticket/a.png
-```
-
-Permitir:
-
-```text
-Keep first
-Keep selected
-Replace references
-Delete duplicates
-```
-
-Antes de excluir, atualizar todos os embeds relevantes.
-
----
-
-# 52. Duplicatas — segurança
-
-Nunca apagar automaticamente imagens existentes apenas porque possuem hash duplicado.
-
-Detecção automática no paste pode reutilizar arquivos.
-
-Limpeza de arquivos existentes deve sempre exigir ação explícita do usuário.
-
----
-
-# 53. Copy Mode
-
-Opções:
-
-- Dedicated;
-- Smart Copy;
-- Always Rich Copy.
-
-Default:
-
-**Smart Copy**
-
----
-
-# 54. Formatação
-
-Preservar:
-
-- bold;
-- italic;
-- headings;
-- links;
-- ordered lists;
-- bullet lists;
-- tables;
-- code;
-- blockquotes;
-- checkboxes.
-
----
-
-# 55. Compatibilidade
-
-Prioridade:
-
-### Tier 1
-
-Movidesk.
-
-### Tier 2
-
-Outlook.
-
-### Tier 3
-
-- Gmail;
-- Google Docs;
-- Word;
-- Slack;
-- outros rich editors.
-
----
-
-# 56. QA Workflow Mode
-
-Menu rápido:
-
-```text
-Annotate
-Mark error
-Add arrow
-Add rectangle
-Add number
-Resize
-Normalize note images
-Copy for ticket
-```
-
----
-
-# 57. Copy for Ticket
-
-Pipeline:
-
-```text
-selection
-↓
-render Markdown
-↓
-resolve images
-↓
-apply resize
-↓
-optional normalize
-↓
-embed images
-↓
-generate clean HTML
-↓
-write clipboard
-```
-
----
-
-# 58. Screenshot Integration
-
-Adicionar futuramente:
-
-**Paste screenshot and annotate**
-
-Fluxo:
-
-```text
-Win+Shift+S
-↓
-Ctrl+Shift+V
-↓
-Screenshot saved
-↓
-Duplicate check
-↓
-Embed inserted
-↓
-Annotation editor opens
-```
-
----
-
-# 59. Naming
-
-Template configurável:
-
-```text
-{note}-{date}-{counter}
-```
-
----
-
-# 60. Organização automática
-
-Configuração de pasta:
-
-```text
-attachments/
-attachments/{note}/
-images/
-same-folder
-custom
-```
-
----
-
-# 61. Editor — arquitetura
-
-Biblioteca sugerida:
-
-**Fabric.js**
-
-Estrutura:
+Fabric.js is the suggested editor library. Separate responsibilities into modules rather than coupling clipboard, image editing, and vault operations.
 
 ```text
 src/
   editor/
     ImageEditorView.ts
     CanvasManager.ts
-
-    tools/
-      SelectTool.ts
-      ArrowTool.ts
-      RectangleTool.ts
-      EllipseTool.ts
-      TextTool.ts
-      FreehandTool.ts
-      MarkerTool.ts
-      HighlightTool.ts
-      RedactionTool.ts
-
-    history/
-      HistoryManager.ts
-
-    persistence/
-      AnnotationSerializer.ts
-
-    export/
-      ImageExporter.ts
-```
-
----
-
-# 62. Image Sizing — arquitetura
-
-```text
-src/
+    tools/           # Select, arrow, rectangle, ellipse, text, freehand,
+                     # number marker, highlight, and redaction
+    history/HistoryManager.ts
+    persistence/AnnotationSerializer.ts
+    export/ImageExporter.ts
   sizing/
     ImageSizeNormalizer.ts
     ImageEmbedParser.ts
     ImageSizeSettings.ts
-```
-
----
-
-# 63. Paste — arquitetura
-
-Criar módulo dedicado:
-
-```text
-src/
   paste/
     ClipboardImageReader.ts
     MultiImagePasteHandler.ts
     ImageFileWriter.ts
     ImageNamingService.ts
-```
-
-Responsabilidades:
-
-```text
-read clipboard
-↓
-extract images
-↓
-validate
-↓
-duplicate check
-↓
-generate name
-↓
-save
-↓
-insert embeds
-```
-
----
-
-# 64. Duplicatas — arquitetura
-
-Criar módulo:
-
-```text
-src/
   duplicates/
     ImageHasher.ts
     DuplicateIndex.ts
     DuplicateDetector.ts
     DuplicateResolver.ts
-```
-
-Interfaces conceituais:
-
-```ts
-interface ImageHashEntry {
-    hash: string;
-    path: string;
-    size: number;
-    modifiedAt?: number;
-}
-```
-
-```ts
-interface DuplicateResult {
-    duplicate: boolean;
-    existingPaths: string[];
-}
-```
-
----
-
-# 65. Clipboard — arquitetura
-
-```text
-src/
   clipboard/
     ClipboardWriter.ts
     HtmlClipboard.ts
     ImageClipboard.ts
 ```
 
----
+This is a suggested module breakdown, not a requirement that each responsibility have its own file. The README documents the implemented structure.
 
-# 66. Export
+## 14. Delivery stages
 
-Default:
+| Stage                              | Scope                                                                                    |
+| ---------------------------------- | ---------------------------------------------------------------------------------------- |
+| MVP 0.1 — Rich Copy                | Markdown to HTML, formatted text, embedded images, resize, Movidesk compatibility target |
+| MVP 0.2 — Image Size Normalization | Note/selection scope, command, hotkey, one-step undo                                     |
+| MVP 0.3 — Multi-image Paste        | Batch detection, ordered saves and embeds, unique names, optional default width          |
+| MVP 0.4 — Duplicate Detection      | SHA-256, local index, reuse, Ask / Always save, index rebuild                            |
+| MVP 0.5 — Basic QA Editor          | Selection, arrows, rectangles, text, colors, undo/redo, saving                           |
+| MVP 0.6 — QA Tools                 | Number markers, highlighting, redaction, cropping, Save & Copy                           |
+| MVP 0.7 — Non-destructive Editing  | Editable `.qrc.json` sidecars                                                            |
 
-```text
-PNG
-```
+## 15. Acceptance criteria
 
-Posteriormente:
+### Multi-image paste
 
-- JPEG;
-- WebP.
-
----
-
-# 67. GIF
-
-Não substituir silenciosamente GIF animado por imagem estática.
-
----
-
-# 68. Keyboard shortcuts
-
-Sugestões:
-
-```text
-V → Select
-A → Arrow
-R → Rectangle
-E → Ellipse
-T → Text
-D → Draw
-N → Number marker
-H → Highlight
-
-Ctrl+Z → Undo
-Ctrl+Shift+Z → Redo
-Ctrl+S → Save
-Ctrl+Shift+C → Copy flattened image
-```
-
-Global:
-
-```text
-Ctrl+Alt+I → Normalize images using default width
-```
-
----
-
-# 69. Settings
-
-## Clipboard
-
-- Smart Copy;
-- Preserve formatting;
-- Preserve resize;
-- Movidesk optimization.
-
-## Editor
-
-- Default color;
-- Default line width;
-- Default font size;
-- Save mode;
-- Annotation folder;
-- Preserve editable annotation data.
-
-## Image sizing
-
-- Default normalized width;
-- Preserve explicit height;
-- Normalize on Copy for Ticket;
-- Size presets.
-
-## Paste
-
-- Paste multiple images;
-- Apply default width;
-- Blank line between images;
-- Naming template;
-- Default image folder.
-
-## Duplicates
-
-- Enable duplicate detection;
-- Duplicate action:
-  - Reuse;
-  - Ask;
-  - Always save.
-- Maintain local hash index.
-
-## QA
-
-- Auto increment markers;
-- Screenshot naming;
-- Quick tools;
-- Redaction style.
-
----
-
-# 70. MVP
-
-## MVP 0.1 — Rich Copy
-
-- Copy with Images;
-- Markdown → HTML;
-- imagens;
-- resize;
-- formatting;
-- Movidesk compatibility.
-
-## MVP 0.2 — Image Size Normalization
-
-- Normalize image sizes;
-- note;
-- selection;
-- hotkey;
-- undo.
-
-## MVP 0.3 — Multi-image Paste
-
-- detectar várias imagens;
-- salvar todas;
-- inserir embeds;
-- preservar ordem;
-- naming automático;
-- tamanho padrão opcional.
-
-## MVP 0.4 — Duplicate Detection
-
-- SHA-256;
-- índice local;
-- reutilizar arquivo existente;
-- configuração Reuse / Ask / Always save;
-- rebuild index.
-
-## MVP 0.5 — Basic QA Editor
-
-- select;
-- arrow;
-- rectangle;
-- text;
-- colors;
-- undo/redo;
-- save.
-
-## MVP 0.6 — QA Tools
-
-- number markers;
-- highlight;
-- redaction;
-- crop;
-- Save & Copy.
-
-## MVP 0.7 — Non-destructive Editing
-
-- `.qrc.json`.
-
----
-
-# 71. Critério de aceitação — Multi-image Paste
-
-Dado que o usuário possui quatro screenshots no clipboard:
-
-```text
-screenshot 1
-screenshot 2
-screenshot 3
-screenshot 4
-```
-
-Ao colar uma única vez, o plugin deve produzir:
+Given four screenshots in the clipboard and automatic width set to 600 px, one paste should insert all four in order, for example:
 
 ```md
 ![[ticket-1500-01.png|600]]
@@ -1585,116 +357,30 @@ Ao colar uma única vez, o plugin deve produzir:
 ![[ticket-1500-04.png|600]]
 ```
 
-quando largura automática estiver configurada como 600px.
+### Duplicate reuse
 
----
+Given `attachments/login-error.png` already exists and the user pastes byte-identical image content with Reuse existing enabled:
 
-# 72. Critério de aceitação — Duplicatas
+1. Detect the matching SHA-256.
+2. Do not create another image file.
+3. Reuse `attachments/login-error.png`.
+4. Insert the corresponding embed.
 
-Dado que:
+Do not create `login-error-1.png` in this case.
 
-```text
-attachments/login-error.png
-```
+### End-to-end evidence workflow
 
-já existe no Vault.
+The user must be able to paste multiple screenshots, avoid redundant image files, normalize them to 600 px, annotate a screenshot with a rectangle/arrow/text, save it, select the analysis, run Copy for Ticket, and paste into Movidesk.
 
-E o usuário cola novamente uma imagem binariamente idêntica.
+The resulting content should contain formatted text, screenshots, annotated images, consistent dimensions, and correct ordering, without visible Markdown image references or unnecessary duplicate files.
 
-Com:
+## 16. Future screenshot integration
 
-```text
-Duplicate behavior: Reuse existing
-```
-
-o plugin deve:
-
-1. detectar o mesmo SHA-256;
-2. não criar novo arquivo;
-3. reutilizar `login-error.png`;
-4. inserir o embed correspondente.
-
-Não deve criar:
+A dedicated **Paste screenshot and annotate** command may support this flow:
 
 ```text
-login-error-1.png
+Win+Shift+S → Ctrl+Shift+V → Save screenshot → Check duplicates
+           → Insert embed → Open annotation editor
 ```
 
----
-
-# 73. Critério principal de aceitação
-
-O usuário deve conseguir:
-
-1. tirar vários screenshots;
-2. copiar/colar todos de uma vez;
-3. evitar arquivos duplicados automaticamente;
-4. deixar todos com 600px;
-5. abrir uma evidência;
-6. adicionar retângulo;
-7. adicionar seta;
-8. escrever uma observação;
-9. salvar;
-10. selecionar a análise;
-11. executar `Copy for Ticket`;
-12. colar no Movidesk.
-
-O resultado deve possuir:
-
-- texto formatado;
-- screenshots;
-- imagens anotadas;
-- tamanho padronizado;
-- ordem correta;
-- nenhuma referência Markdown visível;
-- nenhum arquivo duplicado desnecessário.
-
----
-
-# 74. Diferencial do produto
-
-O produto deve funcionar como um:
-
-> **Workspace de evidências para QA dentro do Obsidian.**
-
-Integra:
-
-```text
-Capture
-+
-Batch Paste
-+
-Deduplication
-+
-Annotation
-+
-Documentation
-+
-Resize
-+
-Normalization
-+
-Clipboard
-+
-Ticket
-```
-
----
-
-# 75. Princípio central
-
-O usuário não deveria precisar:
-
-- salvar cada screenshot manualmente;
-- colar imagens uma por uma;
-- criar várias cópias da mesma imagem;
-- abrir Paint;
-- abrir Snipping Tool;
-- redimensionar cada evidência manualmente;
-- abrir Explorer;
-- corrigir embeds;
-- copiar imagem por imagem para o ticket.
-
-Objetivo:
-
-**Capture → Paste → Deduplicate → Annotate → Normalize → Explain → Copy → Ticket.**
+This shortcut workflow, batch Save & Next, perceptual matching, guided cleanup, blur/pixelation, section-level sizing, and JPEG/WebP export are future work, not initial MVP requirements.

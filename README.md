@@ -2,48 +2,48 @@
 
 # Visual Kit
 
-### Screenshots, anotações e documentação. Dentro do Obsidian.
+### Screenshots, annotations, and documentation. Inside Obsidian.
 
-Transforme capturas de tela em evidências organizadas — da colagem ao ticket.
+Turn screenshots into clear, organized evidence — from capture to ticket.
 
-**Desktop · Processamento local · Obsidian 1.8+ · v0.7.0**
+**Desktop · Local processing · Obsidian 1.8+ · v0.7.0**
 
-[Instalação](#instalação) · [Primeiros passos](#primeiros-passos) · [Recursos](#recursos) · [Desenvolvimento](#desenvolvimento)
+[Installation](#installation) · [Quick start](#quick-start) · [Features](#features) · [Development](#development)
 
 </div>
 
 ---
 
-O **Visual Kit** reúne o trabalho com imagens em um só fluxo: cole várias capturas, reaproveite duplicatas, destaque o que importa, padronize os tamanhos e copie a documentação com imagens para um editor rich-text.
+**Visual Kit** brings your image workflow into Obsidian. Paste multiple screenshots, reuse duplicates, highlight what matters, standardize image sizes, and copy your documentation with images into a rich-text editor.
 
-Feito para QA, suporte, reporte de bugs e qualquer pessoa que precise explicar algo com screenshots.
+Built for QA, support, bug reports, and anyone who explains things with screenshots.
 
 ```text
-Capturar → Colar → Deduplicar → Anotar → Padronizar → Documentar → Copiar
+Capture → Paste → Deduplicate → Annotate → Normalize → Document → Copy
 ```
 
-## Recursos
+## Features
 
-| Recurso                      | O que você pode fazer                                                                             |
-| :--------------------------- | :------------------------------------------------------------------------------------------------ |
-| **Colagem em lote**          | Inserir várias imagens de uma vez, na ordem recebida, com nomes e pasta configuráveis.            |
-| **Duplicatas por conteúdo**  | Reutilizar imagens binariamente idênticas com SHA-256; escolher entre Reuse, Ask e Always save.   |
-| **Editor integrado**         | Adicionar setas, retângulos, elipses, texto multilinha, traços livres e marcadores numerados.     |
-| **Ferramentas de evidência** | Destacar áreas, aplicar tarjas opacas e recortar a imagem.                                        |
-| **Edição reversível**        | Mover, redimensionar, alterar propriedades e usar undo/redo. Salvar dados editáveis junto ao PNG. |
-| **Tamanho consistente**      | Normalizar nota ou seleção para 400, 600, 800 px ou uma largura personalizada.                    |
-| **Cópia rica**               | Copiar texto formatado e imagens locais com dimensões, em HTML e texto simples.                   |
-| **Save & Copy**              | Salvar a imagem anotada e copiá-la em uma única ação.                                             |
+| Feature                         | What you can do                                                                            |
+| :------------------------------ | :----------------------------------------------------------------------------------------- |
+| **Batch paste**                 | Insert multiple images in clipboard order, with configurable file names and folders.       |
+| **Content-based deduplication** | Reuse byte-identical images using SHA-256. Choose Reuse, Ask, or Always save.              |
+| **Built-in image editor**       | Add arrows, rectangles, ellipses, multiline text, freehand drawings, and numbered markers. |
+| **Evidence tools**              | Highlight regions, cover sensitive details with opaque rectangles, and crop images.        |
+| **Editable annotations**        | Move, resize, change properties, and undo/redo. Save editable data alongside the PNG.      |
+| **Consistent image sizes**      | Normalize a note or selection to 400, 600, 800 px, or a custom width.                      |
+| **Rich copy**                   | Copy formatted text and embedded local images, with dimensions, as HTML and plain text.    |
+| **Save & Copy**                 | Save an annotated image and copy it in one action.                                         |
 
-## Instalação
+## Installation
 
-### Pelo pacote pronto
+### From the packaged build
 
-1. Extraia **`visual-kit-0.7.0.zip`**, disponível na pasta `dist` do projeto preparado.
-2. Copie a pasta **`visual-kit`** para a pasta de plugins do seu vault:
+1. Extract **`visual-kit-0.7.0.zip`** from the prepared project's `dist` folder.
+2. Copy the **`visual-kit`** folder into your vault's plugin directory:
 
    ```text
-   Seu Vault/
+   Your Vault/
    └── .obsidian/
        └── plugins/
            └── visual-kit/
@@ -52,131 +52,131 @@ Capturar → Colar → Deduplicar → Anotar → Padronizar → Documentar → C
                └── styles.css
    ```
 
-3. Reinicie o Obsidian.
-4. Abra **Configurações → Plugins da comunidade** e ative **Visual Kit**. Se o modo restrito estiver ativo, permita plugins da comunidade primeiro.
+3. Restart Obsidian.
+4. Open **Settings → Community plugins** and enable **Visual Kit**. If Restricted mode is enabled, allow community plugins first.
 
-Os arquivos devem ficar diretamente dentro de `visual-kit`, sem uma segunda pasta `visual-kit` aninhada.
+The files must sit directly inside `visual-kit`, without a second nested `visual-kit` folder.
 
-> Esta versão usa instalação manual. O plugin ainda não foi publicado no catálogo de plugins da comunidade. Os arquivos gerados em `dist` não são versionados; ao clonar o repositório, use o build abaixo.
+> This version requires manual installation. Visual Kit is not yet listed in the community plugin directory. Generated files in `dist` are not tracked in Git; when cloning the repository, build from source below.
 
-### Pelo código-fonte
+### From source
 
 ```sh
 npm ci
 npm run build
 ```
 
-Copie a pasta gerada **`dist/visual-kit`** para `.obsidian/plugins/` do vault. O build inclui as dependências necessárias; não copie `node_modules` para o Obsidian.
+Copy the generated **`dist/visual-kit`** folder into your vault's `.obsidian/plugins/` directory. Dependencies are bundled; do not copy `node_modules` into Obsidian.
 
-### Se você instalou a versão anterior
+### Upgrading from the previous name
 
-O identificador mudou de `qa-rich-copy` para `visual-kit`. Desative o plugin antigo antes de ativar o novo, para evitar dois manipuladores de paste/copy. Para manter preferências, copie o `data.json` da pasta antiga para a nova com o Obsidian fechado.
+The plugin ID changed from `qa-rich-copy` to `visual-kit`. Disable the old plugin before enabling Visual Kit to avoid duplicate paste/copy handlers. To keep your preferences, copy `data.json` from the old plugin folder into the new one while Obsidian is closed.
 
-Os arquivos de anotações continuam usando **`.qrc.json`** para manter compatibilidade com as evidências já criadas.
+Annotation files retain the **`.qrc.json`** extension for compatibility with existing evidence.
 
-## Primeiros passos
+## Quick start
 
-1. **Cole suas imagens.** Abra uma nota e pressione `Ctrl+V`. Imagens idênticas às existentes são reutilizadas por padrão.
-2. **Padronize a largura.** Na paleta de comandos, procure **Visual Kit: Normalize image sizes** e escolha, por exemplo, `600 px`.
-3. **Anote uma evidência.** Clique com o botão direito na imagem e escolha **Annotate**, ou posicione o cursor no embed e execute **Annotate image**.
-4. **Destaque o problema.** Desenhe uma seta, um retângulo e uma observação. Salve com **Save as new** para preservar o original.
-5. **Atualize a nota.** Escolha substituir o embed, manter o original ou inserir a versão anotada abaixo.
-6. **Copie a análise.** Selecione o conteúdo e execute **Copy for Ticket**. Sem seleção, o comando usa a nota inteira.
-7. **Cole no destino.** Confira as imagens e a formatação no editor do ticket.
+1. **Paste your images.** Open a note and press `Ctrl+V`. Existing byte-identical images are reused by default.
+2. **Set a consistent width.** In the command palette, run **Visual Kit: Normalize image sizes** and choose a width such as `600 px`.
+3. **Annotate a screenshot.** Right-click the image and choose **Annotate**, or place the cursor inside its embed and run **Annotate image**.
+4. **Explain the issue.** Add an arrow, a rectangle, and a text annotation. Choose **Save as new** to preserve the original.
+5. **Update the note.** Replace the embed, keep the original, or insert the annotated image below it.
+6. **Copy your documentation.** Select the content and run **Copy for Ticket**. Without a selection, the command uses the entire note.
+7. **Paste into your destination.** Check the images and formatting in your ticket editor.
 
-> A aceitação das imagens depende do editor de destino. A integração real com Movidesk, Outlook e outros aplicativos ainda precisa de validação manual; não há upload de imagens para esses serviços.
+> Image support depends on the destination editor. End-to-end compatibility with Movidesk, Outlook, and other applications still requires manual validation. Visual Kit does not upload images to those services.
 
-## Comandos
+## Commands
 
-Todos aparecem na paleta com o prefixo **Visual Kit**.
+All commands appear in the command palette with the **Visual Kit** prefix.
 
-| Comando                                | Ação                                                                    |
-| :------------------------------------- | :---------------------------------------------------------------------- |
-| `Copy with Images`                     | Copia a seleção ou nota com texto formatado e imagens locais embutidas. |
-| `Copy for Ticket`                      | Faz a cópia rica, com normalização opcional somente no HTML exportado.  |
-| `Annotate image`                       | Abre a imagem do embed sob o cursor no editor.                          |
-| `Normalize image sizes`                | Abre a escolha de largura, preset e escopo.                             |
-| `Normalize images using default width` | Aplica a largura padrão à seleção ou, se não houver seleção, à nota.    |
-| `Rebuild image duplicate index`        | Reconstrói o índice local de hashes das imagens.                        |
+| Command                                | Action                                                                             |
+| :------------------------------------- | :--------------------------------------------------------------------------------- |
+| `Copy with Images`                     | Copy the selection or note with formatted text and embedded local images.          |
+| `Copy for Ticket`                      | Copy rich content, optionally normalizing image sizes only in the exported HTML.   |
+| `Annotate image`                       | Open the image referenced by the embed under the cursor.                           |
+| `Normalize image sizes`                | Choose a width, preset, and scope.                                                 |
+| `Normalize images using default width` | Apply the default width to the selection, or to the note when nothing is selected. |
+| `Rebuild image duplicate index`        | Rebuild the local image hash index.                                                |
 
-### Modos de cópia
+### Copy modes
 
-| Modo                    | Comportamento no editor                             |
-| :---------------------- | :-------------------------------------------------- |
-| **Smart Copy** — padrão | Intercepta a cópia quando a seleção contém imagens. |
-| **Dedicated**           | A cópia rica só acontece pelos comandos do plugin.  |
-| **Always Rich Copy**    | Intercepta a cópia de qualquer seleção textual.     |
+| Mode                     | Behavior in the editor                                |
+| :----------------------- | :---------------------------------------------------- |
+| **Smart Copy** — default | Intercept copying when the selection contains images. |
+| **Dedicated**            | Use rich copy only through the plugin's commands.     |
+| **Always Rich Copy**     | Intercept copying for any text selection.             |
 
-### Atalhos do editor de imagens
+### Image editor shortcuts
 
-| Tecla                      | Ferramenta ou ação                         |
-| :------------------------- | :----------------------------------------- |
-| `V` / `A` / `R` / `E`      | Seleção / seta / retângulo / elipse        |
-| `T` / `D` / `N` / `H`      | Texto / desenho livre / número / destaque  |
-| `Delete` ou `Backspace`    | Excluir objetos selecionados               |
-| `Ctrl+Z`                   | Desfazer                                   |
-| `Ctrl+Shift+Z` ou `Ctrl+Y` | Refazer                                    |
-| `Ctrl+S`                   | Salvar usando o modo configurado           |
-| `Ctrl+Shift+C`             | Copiar imagem renderizada com as anotações |
-| `Ctrl` + roda do mouse     | Zoom                                       |
-| `Espaço` + arrastar        | Navegar pela imagem                        |
+| Shortcut                   | Tool or action                           |
+| :------------------------- | :--------------------------------------- |
+| `V` / `A` / `R` / `E`      | Select / arrow / rectangle / ellipse     |
+| `T` / `D` / `N` / `H`      | Text / freehand / number / highlight     |
+| `Delete` or `Backspace`    | Delete selected objects                  |
+| `Ctrl+Z`                   | Undo                                     |
+| `Ctrl+Shift+Z` or `Ctrl+Y` | Redo                                     |
+| `Ctrl+S`                   | Save using the configured save mode      |
+| `Ctrl+Shift+C`             | Copy the rendered image with annotations |
+| `Ctrl` + mouse wheel       | Zoom                                     |
+| `Space` + drag             | Pan                                      |
 
-No macOS, use `Cmd` no lugar de `Ctrl`. A normalização rápida usa `Ctrl+Alt+I` (`Cmd+Option+I` no macOS). Os atalhos globais podem ser alterados em **Configurações → Teclas de atalho**.
+On macOS, use `Cmd` instead of `Ctrl`. Quick normalization uses `Ctrl+Alt+I` (`Cmd+Option+I` on macOS). Global shortcuts can be changed under **Settings → Hotkeys**.
 
-## Configurações que fazem diferença
+## Useful settings
 
-| Configuração                     | Padrão                    |
-| :------------------------------- | :------------------------ |
-| Largura de normalização          | `600 px`                  |
-| Aplicar largura ao colar         | Desativado                |
-| Linha em branco entre imagens    | Ativado                   |
-| Pasta de imagens                 | `attachments`             |
-| Template de nome                 | `{note}-{date}-{counter}` |
-| Ação para duplicatas             | Reutilizar existente      |
-| Preservar altura explícita       | Desativado                |
-| Normalizar ao copiar para ticket | Desativado                |
-| Salvar dados editáveis           | Ativado                   |
-| Modo de salvamento               | Nova imagem               |
+| Setting                           | Default                   |
+| :-------------------------------- | :------------------------ |
+| Normalized width                  | `600 px`                  |
+| Apply default width when pasting  | Off                       |
+| Blank line between images         | On                        |
+| Image folder                      | `attachments`             |
+| File name template                | `{note}-{date}-{counter}` |
+| Duplicate action                  | Reuse existing            |
+| Preserve explicit height          | Off                       |
+| Normalize on Copy for Ticket      | Off                       |
+| Preserve editable annotation data | On                        |
+| Save mode                         | New image                 |
 
-Pastas aceitam valores como `attachments`, `attachments/{note}`, `images`, `same-folder` ou outro caminho relativo ao vault.
+Image folders accept values such as `attachments`, `attachments/{note}`, `images`, `same-folder`, or another path relative to the vault.
 
-A normalização altera apenas o tamanho visual no Markdown, preservando o arquivo da imagem. Exemplo com `600 px`:
+Normalization changes only the visual size in Markdown, leaving the image file untouched. For example, at `600 px`:
 
 ```md
 ![[login.png|600]]
 
-![[erro.png|600]]
+![[error.png|600]]
 
 ![Dashboard|600](dashboard.png)
 ```
 
-Embeds de PDF, áudio, vídeo, Canvas e notas não são redimensionados. Exemplos dentro de código também são preservados. Uma única ação de desfazer reverte a normalização.
+PDF, audio, video, Canvas, and note embeds are not resized. Code examples are preserved. A single undo action reverses the normalization.
 
-## Salvamento e privacidade
+## Saving and privacy
 
-O processamento acontece localmente, sem servidores, APIs de upload ou serviços de edição remota.
+Processing happens locally, without servers, upload APIs, or remote image editing services.
 
-- **Save as new:** cria um PNG anotado sem sobrescrever o original.
-- **Save copy:** permite um nome personalizado.
-- **Replace original:** exige confirmação e está disponível para PNG.
-- **Flatten image:** transforma as anotações da sessão em pixels; salve depois para gravar o resultado.
-- **Dados editáveis:** o arquivo `imagem.qrc.json` guarda a imagem-base e os objetos para retomar a edição.
+- **Save as new:** create an annotated PNG without overwriting the original.
+- **Save copy:** choose a custom file name.
+- **Replace original:** overwrite a PNG after confirmation.
+- **Flatten image:** turn the current annotations into pixels; save afterward to write the result.
+- **Editable data:** the `image.qrc.json` file stores the source image and annotation objects for later editing.
 
-> **Ao compartilhar uma evidência com tarjas, envie apenas o PNG exportado.** O original e o `.qrc.json` podem conter os dados que você ocultou visualmente.
+> **When sharing redacted evidence, send only the exported PNG.** The original image and `.qrc.json` file may contain the information you covered visually.
 
-Imagens remotas não são baixadas durante a exportação. GIFs exigem confirmação para edição de um frame e não são sobrescritos por PNG. A detecção de duplicatas nunca apaga arquivos existentes automaticamente.
+Remote images are not downloaded during export. Editing a GIF frame requires confirmation, and GIF files are never overwritten with PNG data. Duplicate detection never deletes existing images automatically.
 
-## Limites desta versão
+## Current limitations
 
-- **Somente desktop.** Windows é a plataforma prioritária; macOS e Linux ainda precisam de validação real. Mobile não está incluído.
-- **Clipboard depende da origem.** Alguns aplicativos fornecem apenas uma imagem, mesmo com várias selecionadas. Nesses casos, copie os arquivos de imagem.
-- **Hash exato.** A mesma imagem com outra compressão ou formato será tratada como um arquivo diferente.
-- **Falha parcial preserva sucessos.** O plugin informa os itens que falharam. Se a nota mudar durante a colagem, os embeds são acrescentados ao final da nota original.
-- **Integração manual pendente.** Os testes automatizados não confirmam a experiência ponta a ponta dentro do Obsidian ou a aceitação do clipboard pelo Movidesk.
+- **Desktop only.** Windows is the priority platform; macOS and Linux still need real-world validation. Mobile is not included.
+- **Clipboard input varies.** Some applications expose only one image even when multiple items are selected. In those cases, copy the image files instead.
+- **Exact hashes.** The same image with different compression or a different format is treated as a different file.
+- **Partial failures preserve successful items.** Failed items are reported. If a note changes during paste, embeds are appended to the original note.
+- **Manual integration testing remains.** Automated tests do not establish end-to-end behavior inside Obsidian or clipboard compatibility with Movidesk.
 
-## Desenvolvimento
+## Development
 
-Use Node.js compatível com as dependências do projeto; a implementação foi validada com Node.js 24.
+Use a Node.js version supported by the project dependencies. This implementation was validated with Node.js 24.
 
 ```sh
 npm ci
@@ -185,40 +185,40 @@ npm test
 npm run build
 ```
 
-| Comando          | Finalidade                                               |
-| :--------------- | :------------------------------------------------------- |
-| `npm run check`  | Verificar tipos TypeScript                               |
-| `npm test`       | Executar os testes de lógica, fluxo, HTML e rasterização |
-| `npm run build`  | Gerar `main.js` e a pasta instalável `dist/visual-kit`   |
-| `npm run format` | Formatar código e documentação                           |
+| Command          | Purpose                                                         |
+| :--------------- | :-------------------------------------------------------------- |
+| `npm run check`  | Check TypeScript types                                          |
+| `npm test`       | Run logic, workflow, HTML export, and rasterization tests       |
+| `npm run build`  | Generate `main.js` and the installable `dist/visual-kit` folder |
+| `npm run format` | Format source code and documentation                            |
 
 ```text
 src/
-├── clipboard/    # HTML, imagens e escrita no clipboard
-├── duplicates/   # SHA-256 e índice local
-├── editor/       # Fabric.js, ferramentas, histórico e persistência
-├── paste/        # Leitura do clipboard, nomes e colagem em lote
-├── sizing/       # Parsing de embeds e normalização
-├── main.ts       # Comandos, eventos, menus e configurações
-└── settings.ts   # Preferências e valores padrão
-tests/           # Testes automatizados e adaptadores de teste
-docs/            # Especificação original do produto
+├── clipboard/    # HTML, images, and clipboard output
+├── duplicates/   # SHA-256 and the local index
+├── editor/       # Fabric.js, tools, history, and persistence
+├── paste/        # Clipboard input, file naming, and batch paste
+├── sizing/       # Embed parsing and size normalization
+├── main.ts       # Commands, events, menus, and settings UI
+└── settings.ts   # Preferences and defaults
+tests/           # Automated tests and test adapters
+docs/            # Product and technical specification
 ```
 
-Fabric.js é incluído no bundle. Obsidian e Electron são fornecidos pelo aplicativo. A licença do Fabric acompanha o pacote em `FABRIC-LICENSE.txt`.
+Fabric.js is bundled. Obsidian and Electron are provided by the host application. The Fabric license is included in the package as `FABRIC-LICENSE.txt`.
 
-Veja [VALIDATION.md](VALIDATION.md) para os resultados e os limites da cobertura automatizada. A [especificação v2.2](docs/spec-v2.2.md) mantém o nome original do produto como referência histórica.
+See [VALIDATION.md](VALIDATION.md) for results and coverage limitations, and the [v2.2 specification](docs/spec-v2.2.md) for product requirements and planned features.
 
-## Checklist para testar no seu vault
+## First-run checklist
 
-- [ ] Colar quatro imagens e conferir ordem, nomes e largura opcional.
-- [ ] Colar novamente e confirmar a reutilização sem arquivos extras.
-- [ ] Anotar com seta, retângulo e texto; salvar e reabrir o PNG.
-- [ ] Usar undo/redo, recorte e cópia da imagem anotada.
-- [ ] Normalizar nota/seleção e desfazer em uma ação.
-- [ ] Copiar texto com lista, tabela, código, checkbox e screenshots.
-- [ ] Colar no Movidesk e conferir imagens, dimensões e formatação.
+- [ ] Paste four images and check their order, file names, and optional default width.
+- [ ] Paste them again and confirm reuse without additional image files.
+- [ ] Add an arrow, rectangle, and text; save and reopen the PNG.
+- [ ] Try undo/redo, cropping, and copying the annotated image.
+- [ ] Normalize a note or selection and undo it in one action.
+- [ ] Copy content with a list, table, code, checkbox, and screenshots.
+- [ ] Paste into your ticket editor and check images, dimensions, and formatting.
 
-## Próximos passos
+## Roadmap
 
-Itens futuros previstos no spec: Paste & Annotate em lote, Save & Next, atalho dedicado para screenshots, comparação perceptual, limpeza guiada de duplicatas, blur/pixelate, normalização por seção e exportação JPEG/WebP.
+Future features specified for later releases: batch Paste & Annotate, Save & Next, a dedicated screenshot shortcut, perceptual duplicate detection, guided duplicate cleanup, blur/pixelation, section-level normalization, and JPEG/WebP export.
