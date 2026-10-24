@@ -1,0 +1,55 @@
+.qrc-editor.modal {
+  width: min(1400px, 96vw);
+  max-width: 96vw;
+  height: 94vh;
+  display: flex;
+  flex-direction: column;
+}
+.qrc-editor .modal-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 10px;
+  overflow: auto;
+}
+.qrc-toolbar,
+.qrc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.qrc-toolbar button {
+  font-size: 12px;
+  padding: 4px 9px;
+}
+.qrc-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+.qrc-toolbar input[type="number"] {
+  width: 62px;
+}
+.qrc-toolbar input[type="color"] {
+  width: 34px;
+  height: 28px;
+  padding: 1px;
+}
+.qrc-viewport {
+  flex: 1;
+  min-height: 280px;
+  height: 52vh;
+  overflow: auto;
+  background: #25262b;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+}
+.qrc-status {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.qrc-editor .canvas-container {
+  margin: auto;
+}

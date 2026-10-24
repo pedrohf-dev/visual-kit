@@ -1,0 +1,24 @@
+{
+  "name": "obsidian-visual-kit",
+  "version": "0.7.0",
+  "private": true,
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "check": "tsc --noEmit",
+    "test": "node tests/run.mjs",
+    "format": "prettier --write src tests *.json *.mjs styles.css README.md"
+  },
+  "dependencies": {
+    "fabric": "^7.4.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0",
+    "jsdom": "^26.1.0",
+    "obsidian": "^1.8.7",
+    "prettier": "^3.9.10",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}
