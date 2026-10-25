@@ -1,10 +1,9 @@
-## Visual Kit 0.7.5
+## Visual Kit 0.7.6
 
-- Fix overlapping context menus when right-clicking an embedded image.
-- Add icons to every Visual Kit image-menu action and remove duplicate editor-menu actions.
-- Resolve image actions from the clicked pane, including inactive panes.
-- Prevent changes to the wrong embed when an image appears multiple times in a note. Use the command on the source embed to annotate a specific occurrence.
-- Keep the red color used by Mark error from changing the default annotation color.
+- Import images from pasted HTML while preserving surrounding text and image order, including content copied from email drafts.
+- Support attached image files, embedded base64 images, and downloadable HTTP/HTTPS images. Downloads happen only when pasting image-containing HTML with multi-image paste enabled.
+- Preserve text and show a placeholder when an image cannot be imported. Private Gmail images may require the browser's authenticated session: copy the image itself or save it and paste the file in that case.
+- Reuse duplicate detection, image naming, and protection against overwriting edits made during paste.
 
 Download main.js, manifest.json, and styles.css into your vault's .obsidian/plugins/visual-kit/ directory. Restart Obsidian and enable Visual Kit.
 

@@ -11,6 +11,7 @@ A local image toolkit for bug reports, support tickets, and visual documentation
 ## Features
 
 - **Batch paste** — insert several images at once, in their original order.
+- **Rich paste** — paste HTML with text and images from email drafts and web pages, keeping their order. Accessible remote images are downloaded into your vault. Private Gmail images may require copying the image itself or saving and pasting the file; unavailable images leave a visible placeholder without losing your text.
 - **Annotate** — add arrows, shapes, text, numbered markers, highlights, and redactions.
 - **Normalize** — give every image in a note or selection a consistent width.
 - **Deduplicate** — reuse identical images instead of saving extra copies.

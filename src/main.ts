@@ -18,6 +18,7 @@ import { isImage, parseImages, resizedEmbed } from "./sizing/ImageEmbedParser";
 import { normalizeImages } from "./sizing/ImageSizeNormalizer";
 import { imageFiles } from "./paste/ClipboardImageReader";
 import { MultiImagePasteHandler } from "./paste/MultiImagePasteHandler";
+import { htmlImagePaste } from "./paste/HtmlImagePaste";
 import { copyMarkdown } from "./clipboard/HtmlClipboard";
 import { imageMime, toDataURL, writeImage } from "./clipboard/ClipboardWriter";
 import { EmbedContext, ImageEditorView } from "./editor/ImageEditorView";
@@ -94,6 +95,21 @@ export default class VisualKit extends Plugin {
         if (event.defaultPrevented || !this.settings.multiPaste || !info.file)
           return;
         const files = imageFiles(event.clipboardData);
+        try {
+          const rich = htmlImagePaste(
+            event.clipboardData?.getData("text/html") || "",
+            files,
+          );
+          if (rich) {
+            event.preventDefault();
+            this.paste.paste(rich.images, editor, info.file, rich.render);
+            return;
+          }
+        } catch {
+          new Notice(
+            "Could not read pasted HTML. Falling back to standard paste.",
+          );
+        }
         if (!files.length) return;
         event.preventDefault();
         this.paste.paste(files, editor, info.file);

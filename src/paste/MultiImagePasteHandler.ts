@@ -6,10 +6,16 @@ import { ensureFolder, uniquePath } from "./ImageFileWriter";
 import { imageHash } from "../duplicates/ImageHasher";
 import { choose } from "../ui";
 import { parseImages } from "../sizing/ImageEmbedParser";
+import type { PasteImage } from "./HtmlImagePaste";
 export class MultiImagePasteHandler {
   private queue: Promise<void> = Promise.resolve();
   constructor(private plugin: VisualKit) {}
-  paste(files: File[], editor: Editor, note: TFile) {
+  paste(
+    files: (File | PasteImage)[],
+    editor: Editor,
+    note: TFile,
+    render?: (embeds: string[]) => string,
+  ) {
     // Capture note and range immediately, never insert into a newly activated note.
     const before = editor.getValue(),
       from = editor.getCursor("from"),
@@ -18,6 +24,10 @@ export class MultiImagePasteHandler {
       .then(async () => {
         const { app, settings, index } = this.plugin;
         const embeds: string[] = [];
+        const ordered: string[] = Array.from(
+          { length: files.length },
+          () => "",
+        );
         const failures: string[] = [];
         let cancelled = 0;
         const folder = imageFolder(
@@ -36,7 +46,10 @@ export class MultiImagePasteHandler {
           await ensureFolder(app, folder);
           for (let i = 0; i < files.length; i++) {
             try {
-              const item = await readImage(files[i]);
+              const input = files[i];
+              const item = await readImage(
+                "load" in input ? await input.load() : input,
+              );
               let existing: TFile | undefined;
               if (settings.duplicates && settings.duplicateAction !== "save") {
                 const matches = await index.find(
@@ -89,9 +102,9 @@ export class MultiImagePasteHandler {
                   item.bytes,
                 ));
               if (settings.duplicates) await index.update(file);
-              embeds.push(
-                `![[${file.path}${settings.pasteWidth ? "|" + settings.width : ""}]]`,
-              );
+              const embed = `![[${file.path}${settings.pasteWidth ? "|" + settings.width : ""}]]`;
+              embeds.push(embed);
+              ordered[i] = embed;
             } catch (error) {
               failures.push(
                 `${files[i].name || `Image ${i + 1}`}: ${String(error)}`,
@@ -99,8 +112,10 @@ export class MultiImagePasteHandler {
             }
             notice.setMessage(`Saving images: ${i + 1}/${files.length}`);
           }
-          if (embeds.length) {
-            const inserted = embeds.join(settings.blankLines ? "\n\n" : "\n");
+          if (embeds.length || render) {
+            const inserted = render
+              ? render(ordered)
+              : embeds.join(settings.blankLines ? "\n\n" : "\n");
             if (
               editor.getValue() === before &&
               app.workspace.getActiveFile()?.path === note.path

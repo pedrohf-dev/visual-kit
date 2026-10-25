@@ -10,6 +10,9 @@ import { copyMarkdown } from "../src/clipboard/HtmlClipboard";
 import { parseAnnotation } from "../src/editor/persistence/AnnotationSerializer";
 import VisualKit from "../src/main";
 import { Menu, MarkdownView } from "./obsidian-mock";
+import { requests } from "./obsidian-mock";
+import { htmlImagePaste } from "../src/paste/HtmlImagePaste";
+import { readImage } from "../src/paste/ClipboardImageReader";
 
 const { window: dom } = new JSDOM();
 Object.assign(globalThis, {
@@ -32,6 +35,58 @@ Object.defineProperty(dom.Element.prototype, "instanceOf", {
     return this.tagName === (type.name === "HTMLAnchorElement" ? "A" : "IMG");
   },
 });
+test("HTML paste preserves mixed image/text order and reads embedded image bytes", async () => {
+  const html =
+    '<img alt="image.png" src="data:image/png;base64,iVBORw0KGgo=">texto enche linguica<img src="data:image/png;base64,iVBORw0KGgo="><img src="data:image/png;base64,iVBORw0KGgo=">';
+  const result = htmlImagePaste(html, [])!;
+  assert.equal(result.images.length, 3);
+  assert.equal(
+    result.render(["![[a.png]]", "![[b.png]]", "![[c.png]]"]),
+    "![[a.png]]texto enche linguica![[b.png]]![[c.png]]",
+  );
+  assert.equal(
+    (await readImage(await result.images[0].load())).extension,
+    "png",
+  );
+  assert.ok(
+    result
+      .render(["", "![[b.png]]", ""])
+      .includes("texto enche linguica![[b.png]]"),
+  );
+});
+
+test("HTML paste prefers matched clipboard files and reports inaccessible Gmail images", async () => {
+  const file = new File(
+    [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])],
+    "image.png",
+  );
+  const html = '<img src="https://mail.google.com/private-image">';
+  requests.length = 0;
+  assert.equal(await htmlImagePaste(html, [file])!.images[0].load(), file);
+  assert.equal(requests.length, 0);
+  await assert.rejects(htmlImagePaste(html, [])!.images[0].load(), /Gmail/);
+  assert.equal(requests.length, 1);
+});
+
+test("HTML paste does not execute markup or request unsupported image protocols", async () => {
+  requests.length = 0;
+  for (const source of [
+    "file:///secret.png",
+    "cid:attachment",
+    "blob:https://mail.google.com/image",
+    "javascript:alert(1)",
+  ]) {
+    const result = htmlImagePaste(
+      `<script>alert(1)</script><img src="${source}">text`,
+      [],
+    )!;
+    await assert.rejects(result.images[0].load());
+    assert.ok(!result.render(["![[a.png]]"]).includes("alert(1)"));
+  }
+  assert.equal(requests.length, 0);
+  assert.equal(htmlImagePaste("<p>Plain text</p>", []), undefined);
+});
+
 test("image context menu suppresses the native menu, has icons and avoids ambiguous edits", async () => {
   const plugin = new VisualKit({} as never, {} as never);
   const imageFile = new TFile("a.png");

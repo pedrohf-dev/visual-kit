@@ -30,6 +30,19 @@ export class Modal {
   close() {}
 }
 export class Setting {}
+export const requests: string[] = [];
+export async function requestUrl(options: { url: string }) {
+  requests.push(options.url);
+  return { status: 403, arrayBuffer: new ArrayBuffer(0) };
+}
+export function sanitizeHTMLToDom(html: string) {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return template.content;
+}
+export function htmlToMarkdown(fragment: DocumentFragment) {
+  return fragment.textContent || "";
+}
 export class PluginSettingTab {}
 export class MarkdownView {}
 export class Plugin {

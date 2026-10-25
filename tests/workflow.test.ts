@@ -65,6 +65,31 @@ function fixture() {
     },
   };
 }
+test("HTML paste keeps text and failure positions while saving available images", async () => {
+  const f = fixture();
+  const handler = new MultiImagePasteHandler(f.plugin as never);
+  handler.paste(
+    [
+      {
+        name: "unavailable",
+        load: async () => {
+          throw new Error("Authentication required");
+        },
+      },
+      { name: "available", load: async () => new File([png(1)], "a.png") },
+    ],
+    f.editor as never,
+    f.note as never,
+    (embeds) => `${embeds[0] || "[Image not imported]"}\ntext\n${embeds[1]}`,
+  );
+  await (handler as unknown as { queue: Promise<void> }).queue;
+  assert.equal(
+    f.getContent(),
+    "[Image not imported]\ntext\n![[attachments/ticket-1500-02.png|600]]",
+  );
+  assert.equal(f.getWrites(), 1);
+});
+
 test("acceptance: four images preserve order and default width; repeat paste reuses all", async () => {
   const f = fixture();
   const files = [1, 2, 3, 4].map(
