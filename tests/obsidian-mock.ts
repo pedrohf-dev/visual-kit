@@ -30,6 +30,61 @@ export class Modal {
   close() {}
 }
 export class Setting {}
+export class PluginSettingTab {}
+export class MarkdownView {}
+export class Plugin {
+  app: any;
+  async loadData() {
+    return {};
+  }
+  addSettingTab() {}
+  addRibbonIcon() {
+    return { remove() {} };
+  }
+  addCommand() {}
+  registerEvent() {}
+  registerInterval(id: number) {
+    window.clearInterval(id);
+  }
+  registerDomEvent(
+    el: Document,
+    type: string,
+    callback: EventListener,
+    options?: AddEventListenerOptions,
+  ) {
+    el.addEventListener(type, callback, options);
+  }
+}
+export class Menu {
+  static shown: Menu[] = [];
+  items: MenuItem[] = [];
+  addItem(callback: (item: MenuItem) => void) {
+    const item = new MenuItem();
+    callback(item);
+    this.items.push(item);
+    return this;
+  }
+  showAtMouseEvent() {
+    Menu.shown.push(this);
+  }
+}
+class MenuItem {
+  title = "";
+  icon = "";
+  callback = () => {};
+  setTitle(title: string) {
+    this.title = title;
+    return this;
+  }
+  setIcon(icon: string) {
+    this.icon = icon;
+    return this;
+  }
+  onClick(callback: () => void) {
+    this.callback = callback;
+    return this;
+  }
+}
 export class Component {
   load() {}
   unload() {}

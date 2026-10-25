@@ -112,7 +112,10 @@ export default class VisualKit extends Plugin {
         const context = this.contextAt(editor, info.file);
         if (context) {
           const file = this.resolve(context.embed.target, info.file.path);
-          if (file) this.imageMenu(menu, file, context);
+          if (file) {
+            this.imageMenu(menu, file, context);
+            return;
+          }
         }
         menu.addItem((item) =>
           item
@@ -148,43 +151,59 @@ export default class VisualKit extends Plugin {
         event.preventDefault();
         guarded(() => this.copy(view.editor, view.file!.path));
       });
-      this.registerDomEvent(doc, "contextmenu", (event) => {
-        const target = event.target as HTMLElement;
-        const image = target.closest?.("img");
-        if (!image) return;
-        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (!view?.file || !view.contentEl.contains(image)) return;
-        const source = image.closest("[src]")?.getAttribute("src") || "";
-        const wrapper = image.closest(".internal-embed");
-        const link = wrapper?.getAttribute("src");
-        let file = link ? this.resolve(link, view.file.path) : null;
-        if (!file)
-          file =
-            this.app.vault
-              .getFiles()
-              .find(
-                (f) =>
-                  isImage(f.path) &&
-                  this.app.vault.getResourcePath(f) === source,
-              ) || null;
-        if (!file) return;
-        event.preventDefault();
-        event.stopPropagation();
-        const embed = parseImages(view.editor.getValue()).find(
-          (e) => this.resolve(e.target, view.file!.path)?.path === file.path,
-        );
-        const context = embed
-          ? {
-              editor: view.editor,
-              note: view.file,
-              embed,
-              before: view.editor.getValue(),
-            }
-          : undefined;
-        const menu = new Menu();
-        this.imageMenu(menu, file, context);
-        menu.showAtMouseEvent(event);
-      });
+      this.registerDomEvent(
+        doc,
+        "contextmenu",
+        (event) => {
+          const target = event.target as HTMLElement;
+          const image = target.closest?.("img");
+          if (!image) return;
+          let view: MarkdownView | undefined;
+          this.app.workspace.iterateAllLeaves((leaf) => {
+            if (
+              leaf.view instanceof MarkdownView &&
+              leaf.view.contentEl.contains(image)
+            )
+              view = leaf.view;
+          });
+          if (!view?.file) return;
+          const source = image.closest("[src]")?.getAttribute("src") || "";
+          const wrapper = image.closest(".internal-embed");
+          const link = wrapper?.getAttribute("src");
+          let file = link ? this.resolve(link, view.file.path) : null;
+          if (!file)
+            file =
+              this.app.vault
+                .getFiles()
+                .find(
+                  (f) =>
+                    isImage(f.path) &&
+                    this.app.vault.getResourcePath(f) === source,
+                ) || null;
+          if (!file) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const notePath = view.file.path;
+          const embeds = parseImages(view.editor.getValue()).filter(
+            (e) => this.resolve(e.target, notePath)?.path === file.path,
+          );
+          // A rendered image does not reliably expose its source offset. Never
+          // edit the first occurrence when the same file is embedded repeatedly.
+          const embed = embeds.length === 1 ? embeds[0] : undefined;
+          const context = embed
+            ? {
+                editor: view.editor,
+                note: view.file,
+                embed,
+                before: view.editor.getValue(),
+              }
+            : undefined;
+          const menu = new Menu();
+          this.imageMenu(menu, file, context);
+          menu.showAtMouseEvent(event);
+        },
+        { capture: true },
+      );
     };
     attach(document);
     this.registerEvent(
@@ -287,7 +306,8 @@ export default class VisualKit extends Plugin {
   private imageMenu(menu: Menu, file: TFile, context?: EmbedContext) {
     const open = (
       tool: ConstructorParameters<typeof ImageEditorView>[3] = "select",
-    ) => new ImageEditorView(this, file, context, tool).open();
+      color?: string,
+    ) => new ImageEditorView(this, file, context, tool, color).open();
     menu.addItem((i) =>
       i
         .setTitle("Annotate")
@@ -295,17 +315,19 @@ export default class VisualKit extends Plugin {
         .onClick(() => open()),
     );
     if (this.settings.quickTools)
-      for (const [title, tool] of [
-        ["Mark error", "rectangle"],
-        ["Add arrow", "arrow"],
-        ["Add rectangle", "rectangle"],
-        ["Add number", "number"],
+      for (const [title, tool, icon] of [
+        ["Mark error", "rectangle", "circle-alert"],
+        ["Add arrow", "arrow", "arrow-up-right"],
+        ["Add rectangle", "rectangle", "square"],
+        ["Add number", "number", "hash"],
       ] as const)
         menu.addItem((i) =>
-          i.setTitle(title).onClick(() => {
-            if (title === "Mark error") this.settings.color = "#ef4444";
-            open(tool);
-          }),
+          i
+            .setTitle(title)
+            .setIcon(icon)
+            .onClick(() => {
+              open(tool, title === "Mark error" ? "#ef4444" : undefined);
+            }),
         );
     menu.addItem((i) =>
       i
@@ -323,19 +345,22 @@ export default class VisualKit extends Plugin {
         }),
     );
     menu.addItem((i) =>
-      i.setTitle("Copy image with annotations").onClick(() => {
-        // Saved PNGs already contain the flattened annotations; unsaved edits
-        // are copied by the editor's Copy action.
-        void this.app.vault
-          .readBinary(file)
-          .then((bytes) =>
-            writeImage(toDataURL(bytes, imageMime(file.extension))),
-          )
-          .then(() => {
-            new Notice("Annotated image copied");
-          })
-          .catch((error) => new Notice(String(error)));
-      }),
+      i
+        .setTitle("Copy image with annotations")
+        .setIcon("copy")
+        .onClick(() => {
+          // Saved PNGs already contain the flattened annotations; unsaved edits
+          // are copied by the editor's Copy action.
+          void this.app.vault
+            .readBinary(file)
+            .then((bytes) =>
+              writeImage(toDataURL(bytes, imageMime(file.extension))),
+            )
+            .then(() => {
+              new Notice("Annotated image copied");
+            })
+            .catch((error) => new Notice(String(error)));
+        }),
     );
     menu.addItem((i) =>
       i
@@ -347,42 +372,53 @@ export default class VisualKit extends Plugin {
     );
     if (context) {
       menu.addItem((i) =>
-        i.setTitle("Resize").onClick(() => {
-          void (async () => {
-            const input = await askText(
-              this.app,
-              "Image width in pixels",
-              String(context.embed.width || this.settings.width),
-            );
-            if (input === null) return;
-            const width = Number(input);
-            if (!Number.isInteger(width) || width < 1 || width > 16384) {
-              new Notice("Width must be between 1 and 16384");
-              return;
-            }
-            if (context.editor.getValue() !== context.before) {
-              new Notice("Note changed; retry resize");
-              return;
-            }
-            context.editor.replaceRange(
-              resizedEmbed(context.embed, width, this.settings.preserveHeight),
-              context.editor.offsetToPos(context.embed.start),
-              context.editor.offsetToPos(context.embed.end),
-            );
-          })();
-        }),
+        i
+          .setTitle("Resize")
+          .setIcon("scaling")
+          .onClick(() => {
+            void (async () => {
+              const input = await askText(
+                this.app,
+                "Image width in pixels",
+                String(context.embed.width || this.settings.width),
+              );
+              if (input === null) return;
+              const width = Number(input);
+              if (!Number.isInteger(width) || width < 1 || width > 16384) {
+                new Notice("Width must be between 1 and 16384");
+                return;
+              }
+              if (context.editor.getValue() !== context.before) {
+                new Notice("Note changed; retry resize");
+                return;
+              }
+              context.editor.replaceRange(
+                resizedEmbed(
+                  context.embed,
+                  width,
+                  this.settings.preserveHeight,
+                ),
+                context.editor.offsetToPos(context.embed.start),
+                context.editor.offsetToPos(context.embed.end),
+              );
+            })();
+          }),
       );
       menu.addItem((i) =>
         i
           .setTitle("Normalize note images")
+          .setIcon("scaling")
           .onClick(() => this.normalizeModal(context.editor)),
       );
       menu.addItem((i) =>
-        i.setTitle("Copy for ticket").onClick(() => {
-          void this.copy(context.editor, context.note.path, true).catch(
-            (e) => new Notice(String(e)),
-          );
-        }),
+        i
+          .setTitle("Copy for ticket")
+          .setIcon("copy")
+          .onClick(() => {
+            void this.copy(context.editor, context.note.path, true).catch(
+              (e) => new Notice(String(e)),
+            );
+          }),
       );
     }
   }

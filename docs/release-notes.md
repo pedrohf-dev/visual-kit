@@ -1,14 +1,10 @@
-## Visual Kit 0.7.4
+## Visual Kit 0.7.5
 
-- Synchronize the manifest, package metadata, compatibility map, and installable release assets for version 0.7.4.
-
-- Fix Obsidian source-review errors: use supported styling helpers and native settings headings.
-- Add searchable settings on Obsidian 1.13+, with a fallback for older supported versions.
-- Use typed Electron imports and decode local image data without fetch or network requests.
-- Remove the default global hotkey; assign shortcuts in Settings → Hotkeys.
-- Validate saved preferences and use independent, typed undo/redo snapshots.
-- Use Fabric's center-based positioning while preserving image and annotation coordinates.
-- Add the official Obsidian ESLint checks to release verification.
+- Fix overlapping context menus when right-clicking an embedded image.
+- Add icons to every Visual Kit image-menu action and remove duplicate editor-menu actions.
+- Resolve image actions from the clicked pane, including inactive panes.
+- Prevent changes to the wrong embed when an image appears multiple times in a note. Use the command on the source embed to annotate a specific occurrence.
+- Keep the red color used by Mark error from changing the default annotation color.
 
 Download main.js, manifest.json, and styles.css into your vault's .obsidian/plugins/visual-kit/ directory. Restart Obsidian and enable Visual Kit.
 

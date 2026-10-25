@@ -77,9 +77,10 @@ export class ImageEditorView extends Modal {
     private file: TFile,
     private context?: EmbedContext,
     private initial: Tool = "select",
+    initialColor?: string,
   ) {
     super(plugin.app);
-    this.color = plugin.settings.color;
+    this.color = initialColor ?? plugin.settings.color;
     this.lineWidth = plugin.settings.lineWidth;
     this.fontSize = plugin.settings.fontSize;
   }

@@ -1,7 +1,7 @@
 {
   "id": "visual-kit",
   "name": "Visual Kit",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "minAppVersion": "1.8.0",
   "description": "Local evidence workflow: batch paste, deduplicate, annotate, normalize and copy rich text with images.",
   "author": "Visual Kit",

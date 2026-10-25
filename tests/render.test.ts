@@ -8,10 +8,13 @@ import { TFile } from "./obsidian-mock";
 import { clipboard } from "./electron-mock";
 import { copyMarkdown } from "../src/clipboard/HtmlClipboard";
 import { parseAnnotation } from "../src/editor/persistence/AnnotationSerializer";
+import VisualKit from "../src/main";
+import { Menu, MarkdownView } from "./obsidian-mock";
 
 const { window: dom } = new JSDOM();
 Object.assign(globalThis, {
   document: dom.document,
+  window: dom,
   NodeFilter: dom.NodeFilter,
   HTMLAnchorElement: dom.HTMLAnchorElement,
   HTMLImageElement: dom.HTMLImageElement,
@@ -29,6 +32,75 @@ Object.defineProperty(dom.Element.prototype, "instanceOf", {
     return this.tagName === (type.name === "HTMLAnchorElement" ? "A" : "IMG");
   },
 });
+test("image context menu suppresses the native menu, has icons and avoids ambiguous edits", async () => {
+  const plugin = new VisualKit({} as never, {} as never);
+  const imageFile = new TFile("a.png");
+  const note = new TFile("note.md");
+  let source = "![[a.png]]";
+  const editor = {
+    getValue: () => source,
+    getCursor: () => ({ line: 0, ch: 2 }),
+    posToOffset: () => 2,
+  };
+  const root = dom.document.createElement("div");
+  root.innerHTML =
+    '<span class="internal-embed" src="a.png"><img src="app://a.png"></span>';
+  dom.document.body.append(root);
+  const view = Object.assign(new MarkdownView(), {
+    contentEl: root,
+    file: note,
+    editor,
+  });
+  const events = new Map<string, (...args: any[]) => void>();
+  Object.assign(plugin, {
+    app: {
+      workspace: {
+        on: (name: string, callback: (...args: any[]) => void) =>
+          events.set(name, callback),
+        iterateAllLeaves: (callback: (leaf: unknown) => void) =>
+          callback({ view }),
+        getActiveViewOfType: () => null,
+      },
+      vault: { on: () => {} },
+      metadataCache: { getFirstLinkpathDest: () => imageFile },
+    },
+  });
+  await plugin.onload();
+  let nativeMenus = 0;
+  root.addEventListener("contextmenu", () => nativeMenus++);
+  const click = () =>
+    root
+      .querySelector("img")!
+      .dispatchEvent(
+        new dom.MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
+      );
+  Menu.shown = [];
+  click();
+  assert.equal(nativeMenus, 0);
+  assert.equal(Menu.shown.length, 1);
+  const items = Menu.shown[0].items;
+  assert.ok(items.every((item) => item.icon));
+  assert.equal(items.filter((item) => item.title === "Resize").length, 1);
+  const color = plugin.settings.color;
+  items.find((item) => item.title === "Mark error")!.callback();
+  assert.equal(plugin.settings.color, color);
+  const editorMenu = new Menu();
+  events.get("editor-menu")!(editorMenu, editor, { file: note });
+  assert.equal(
+    editorMenu.items.filter((item) => item.title === "Copy for ticket").length,
+    1,
+  );
+  assert.equal(
+    editorMenu.items.filter((item) => item.title === "Normalize note images")
+      .length,
+    1,
+  );
+  source = "![[a.png]]\n![[a.png]]";
+  click();
+  assert.ok(!Menu.shown[1].items.some((item) => item.title === "Resize"));
+  root.remove();
+});
+
 test("editor raster export respects crop at arbitrary viewport zoom and reopens objects", async () => {
   const base = new StaticCanvas(undefined, { width: 100, height: 80 });
   base.add(
