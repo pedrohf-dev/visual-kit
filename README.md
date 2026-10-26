@@ -33,7 +33,7 @@ Requires **Obsidian Desktop 1.8.0 or later**.
 2. Right-click an image and choose **Annotate**.
 3. Add your annotations and choose **Save as new**.
 4. Run **Visual Kit: Normalize image sizes** to set a consistent width.
-5. Select your documentation and run **Visual Kit: Copy for ticket**.
+5. Select your documentation and run **Visual Kit: Copy with images**. Text inherits the destination editor's font and color; optional image-size normalization is available in settings.
 
 You can also run **Copy with images** from the command palette. Without a selection, copy commands use the entire note. Formatting and image support depend on the destination editor.
 

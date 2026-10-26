@@ -1,9 +1,9 @@
-## Visual Kit 0.7.6
+## Visual Kit 0.7.7
 
-- Import images from pasted HTML while preserving surrounding text and image order, including content copied from email drafts.
-- Support attached image files, embedded base64 images, and downloadable HTTP/HTTPS images. Downloads happen only when pasting image-containing HTML with multi-image paste enabled.
-- Preserve text and show a placeholder when an image cannot be imported. Private Gmail images may require the browser's authenticated session: copy the image itself or save it and paste the file in that case.
-- Reuse duplicate detection, image naming, and protection against overwriting edits made during paste.
+- Consolidate rich-copy actions into Copy with images. Copy for ticket has been removed; reassign any custom shortcut to Copy with images.
+- Retain optional image-size normalization under Normalize image sizes on copy. This setting now applies to all rich-copy actions.
+- Stop imposing Arial, 14px, line height, and text color on copied HTML so destination editors such as Movidesk can apply their own typography.
+- Keep images, explicit image dimensions, semantic formatting, and table layout in rich copies.
 
 Download main.js, manifest.json, and styles.css into your vault's .obsidian/plugins/visual-kit/ directory. Restart Obsidian and enable Visual Kit.
 

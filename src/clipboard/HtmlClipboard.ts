@@ -7,7 +7,6 @@ export async function copyMarkdown(
   markdown: string,
   sourcePath: string,
   settings: Settings,
-  ticket = false,
 ) {
   const owner = new Component();
   owner.load();
@@ -72,12 +71,11 @@ export async function copyMarkdown(
         );
         img.alt =
           embed.label.replace(/(?:^|\|)\d+(?:x\d+)?$/, "") || file.basename;
-        const width =
-          ticket && settings.normalizeCopy
-            ? settings.width
-            : settings.preserveResize
-              ? embed.width
-              : undefined;
+        const width = settings.normalizeCopy
+          ? settings.width
+          : settings.preserveResize
+            ? embed.width
+            : undefined;
         if (width) {
           img.width = width;
           img.setCssStyles({ width: `${width}px` });
@@ -85,7 +83,7 @@ export async function copyMarkdown(
         if (
           settings.preserveResize &&
           embed.height &&
-          (!(ticket && settings.normalizeCopy) || settings.preserveHeight)
+          (!settings.normalizeCopy || settings.preserveHeight)
         ) {
           img.height = embed.height;
           img.setCssStyles({ height: `${embed.height}px` });
@@ -132,33 +130,24 @@ export async function copyMarkdown(
       if (!el.instanceOf(HTMLImageElement)) el.removeAttribute("style");
     }
     if (settings.movidesk) {
-      root.setCssStyles({
-        fontFamily: "Arial,sans-serif",
-        fontSize: "14px",
-        lineHeight: "1.5",
-        color: "#222",
-      });
+      // Leave typography unset so the destination editor can apply its macro style.
       root
         .querySelectorAll("table")
         .forEach((el) => el.setCssStyles({ borderCollapse: "collapse" }));
-      root
-        .querySelectorAll<HTMLElement>("td,th")
-        .forEach((el) =>
-          el.setCssStyles({
-            border: "1px solid #bbb",
-            padding: "6px",
-            textAlign: "left",
-          }),
-        );
-      root
-        .querySelectorAll("pre")
-        .forEach((el) =>
-          el.setCssStyles({
-            whiteSpace: "pre-wrap",
-            background: "#f3f3f3",
-            padding: "10px",
-          }),
-        );
+      root.querySelectorAll<HTMLElement>("td,th").forEach((el) =>
+        el.setCssStyles({
+          border: "1px solid #bbb",
+          padding: "6px",
+          textAlign: "left",
+        }),
+      );
+      root.querySelectorAll("pre").forEach((el) =>
+        el.setCssStyles({
+          whiteSpace: "pre-wrap",
+          background: "#f3f3f3",
+          padding: "10px",
+        }),
+      );
     }
     if (!settings.preserveFormatting)
       root

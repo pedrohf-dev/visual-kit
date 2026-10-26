@@ -50,12 +50,6 @@ export default class VisualKit extends Plugin {
         guarded(() => this.copy(editor, info.file?.path || "")),
     });
     this.addCommand({
-      id: "copy-for-ticket",
-      name: "Copy for ticket",
-      editorCallback: (editor, info) =>
-        guarded(() => this.copy(editor, info.file?.path || "", true)),
-    });
-    this.addCommand({
       id: "normalize-image-sizes",
       name: "Normalize image sizes",
       editorCallback: (editor) => this.normalizeModal(editor),
@@ -135,9 +129,9 @@ export default class VisualKit extends Plugin {
         }
         menu.addItem((item) =>
           item
-            .setTitle("Copy for ticket")
+            .setTitle("Copy with images")
             .setIcon("copy")
-            .onClick(() => guarded(() => this.copy(editor, notePath, true))),
+            .onClick(() => guarded(() => this.copy(editor, notePath))),
         );
         menu.addItem((item) =>
           item
@@ -282,13 +276,12 @@ export default class VisualKit extends Plugin {
         },
       );
   }
-  async copy(editor: Editor, path: string, ticket = false) {
+  async copy(editor: Editor, path: string) {
     await copyMarkdown(
       this.app,
       editor.getSelection() || editor.getValue(),
       path,
       this.settings,
-      ticket,
     );
     new Notice("Text and images copied");
   }
@@ -428,10 +421,10 @@ export default class VisualKit extends Plugin {
       );
       menu.addItem((i) =>
         i
-          .setTitle("Copy for ticket")
+          .setTitle("Copy with images")
           .setIcon("copy")
           .onClick(() => {
-            void this.copy(context.editor, context.note.path, true).catch(
+            void this.copy(context.editor, context.note.path).catch(
               (e) => new Notice(String(e)),
             );
           }),
@@ -588,7 +581,7 @@ class SettingsTab extends PluginSettingTab {
             max: 16384,
           },
           { key: "preserveHeight", name: "Preserve explicit height" },
-          { key: "normalizeCopy", name: "Normalize on copy for ticket" },
+          { key: "normalizeCopy", name: "Normalize image sizes on copy" },
           { key: "ribbon", name: "Show normalization ribbon button" },
         ],
       },

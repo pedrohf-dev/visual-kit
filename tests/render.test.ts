@@ -142,7 +142,7 @@ test("image context menu suppresses the native menu, has icons and avoids ambigu
   const editorMenu = new Menu();
   events.get("editor-menu")!(editorMenu, editor, { file: note });
   assert.equal(
-    editorMenu.items.filter((item) => item.title === "Copy for ticket").length,
+    editorMenu.items.filter((item) => item.title === "Copy with images").length,
     1,
   );
   assert.equal(
@@ -248,16 +248,17 @@ test("rich export embeds local binary and sizes, writes both flavors, normalizes
   assert.match(clipboard.last.html, /data:image\/png;base64,/);
   assert.match(clipboard.last.html, /width="500"/);
   assert.match(clipboard.last.html, /height="300"/);
+  assert.doesNotMatch(
+    clipboard.last.html,
+    /font-family|font-size|line-height|color\s*:/i,
+  );
   assert.doesNotMatch(clipboard.last.html, /!\[\[|QRC[0-9a-f]/);
   assert.match(clipboard.last.text, /Before/);
   assert.match(clipboard.last.text, /After/);
-  await copyMarkdown(
-    app as never,
-    markdown,
-    "note.md",
-    { ...defaults, normalizeCopy: true },
-    true,
-  );
+  await copyMarkdown(app as never, markdown, "note.md", {
+    ...defaults,
+    normalizeCopy: true,
+  });
   assert.match(clipboard.last.html, /width="600"/);
   assert.doesNotMatch(clipboard.last.html, /height="300"/);
   assert.equal(markdown, "Before\n![[a.png|500x300]]\nAfter");
