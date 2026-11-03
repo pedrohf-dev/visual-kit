@@ -18,7 +18,7 @@ await build({
     obsidian: resolve("tests/obsidian-mock.ts"),
     electron: resolve("tests/electron-mock.ts"),
   },
-  external: ["jsdom"],
+  external: ["jsdom", "canvas"],
   plugins: [
     {
       name: "fabric-node",

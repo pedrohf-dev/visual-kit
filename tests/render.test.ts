@@ -13,6 +13,11 @@ import { Menu, MarkdownView } from "./obsidian-mock";
 import { requests } from "./obsidian-mock";
 import { htmlImagePaste } from "../src/paste/HtmlImagePaste";
 import { readImage } from "../src/paste/ClipboardImageReader";
+import { loadImage } from "canvas";
+import { prepareCopyImage } from "../src/clipboard/CopyImage";
+import { formatCopy } from "../src/clipboard/CopyFormatting";
+import { settingDescriptions } from "../src/settingDescriptions";
+import { readStoredData } from "../src/storage";
 
 const { window: dom } = new JSDOM();
 Object.assign(globalThis, {
@@ -23,7 +28,12 @@ Object.assign(globalThis, {
   HTMLImageElement: dom.HTMLImageElement,
   createFragment: () => dom.document.createDocumentFragment(),
   createDiv: () => dom.document.createElement("div"),
+  createSpan: () => dom.document.createElement("span"),
   createEl: (tag: string) => dom.document.createElement(tag),
+  createImageBitmap: async (blob: Blob) => {
+    const image = await loadImage(Buffer.from(await blob.arrayBuffer()));
+    return Object.assign(image, { close() {} });
+  },
 });
 Object.defineProperty(dom.HTMLElement.prototype, "setCssStyles", {
   value: function (this: HTMLElement, styles: Partial<CSSStyleDeclaration>) {
@@ -238,7 +248,12 @@ test("editor raster export respects crop at arbitrary viewport zoom and reopens 
 });
 test("rich export embeds local binary and sizes, writes both flavors, normalizes only output", async () => {
   const file = new TFile("a.png"),
-    bytes = new Uint8Array([137, 80, 78, 71]).buffer;
+    imageCanvas = dom.document.createElement("canvas");
+  imageCanvas.width = 100;
+  imageCanvas.height = 60;
+  const bytes = Uint8Array.from(
+    Buffer.from(imageCanvas.toDataURL().split(",")[1], "base64"),
+  ).buffer;
   const app = {
     metadataCache: { getFirstLinkpathDest: () => file },
     vault: { readBinary: async () => bytes },
@@ -260,8 +275,115 @@ test("rich export embeds local binary and sizes, writes both flavors, normalizes
     normalizeCopy: true,
   });
   assert.match(clipboard.last.html, /width="600"/);
+  assert.match(clipboard.last.html, /height="360"/);
+  const outputImage = await loadImage(
+    /src="([^"]+)"/.exec(clipboard.last.html)![1],
+  );
+  assert.equal(outputImage.width, 600);
+  assert.equal(outputImage.height, 360);
+  assert.doesNotMatch(clipboard.last.html, /<(div|p)[\s>]/);
   assert.doesNotMatch(clipboard.last.html, /height="300"/);
   assert.equal(markdown, "Before\n![[a.png|500x300]]\nAfter");
+});
+
+test("copy formatting flattens macro-breaking blocks and supports explicit macro typography", () => {
+  const root = dom.document.createElement("div");
+  root.innerHTML =
+    "<h2>Heading</h2><p>First <strong>bold</strong></p><p>Second <code>code</code></p>";
+  formatCopy(root, {
+    ...defaults,
+    copyFontFamily: "Arial",
+    copyFontSize: "16",
+    copyTextColor: "#123456",
+  });
+  assert.doesNotMatch(root.innerHTML, /<(h2|p|code)[\s>]/);
+  assert.equal(root.querySelectorAll("br").length, 3);
+  assert.equal(root.querySelector("strong")?.textContent, "bold");
+  assert.equal(
+    root.firstElementChild?.getAttribute("style"),
+    "font-family: Arial; font-size: 16px; color: rgb(18, 52, 86);",
+  );
+  const plain = dom.document.createElement("div");
+  plain.innerHTML = "<p><b>First</b></p><p><i>Second</i></p>";
+  formatCopy(plain, { ...defaults, preserveFormatting: false });
+  assert.equal(plain.innerHTML, "First<br>Second<br>");
+});
+
+test("image export rejects corrupt and oversized images before overwriting clipboard", async () => {
+  const before = { ...clipboard.last };
+  const app = {
+    metadataCache: { getFirstLinkpathDest: () => new TFile("bad.png") },
+    vault: { readBinary: async () => new Uint8Array([1, 2, 3]).buffer },
+  };
+  await assert.rejects(
+    copyMarkdown(app as never, "![[bad.png]]", "note.md", defaults),
+    /Clipboard unchanged/,
+  );
+  assert.deepEqual(clipboard.last, before);
+  await assert.rejects(
+    prepareCopyImage(new ArrayBuffer(1), "png", 0),
+    /dimensions/,
+  );
+  await assert.rejects(prepareCopyImage(new ArrayBuffer(0), "png"), /empty/);
+  await assert.rejects(prepareCopyImage(new ArrayBuffer(1), "svg"), /PNG/);
+});
+
+test("every setting has an explanation", () => {
+  for (const key of Object.keys(defaults) as (keyof typeof defaults)[])
+    assert.ok(settingDescriptions[key].length > 30, key);
+});
+
+test("PNG export bakes dimensions, retains aspect ratio, and can preserve original encoding", async () => {
+  const source = dom.document.createElement("canvas");
+  source.width = 100;
+  source.height = 60;
+  source.getContext("2d")!.fillRect(0, 0, 100, 60);
+  const bytes = Uint8Array.from(
+    Buffer.from(source.toDataURL("image/jpeg").split(",")[1], "base64"),
+  ).buffer;
+  const image = await prepareCopyImage(bytes, "jpg", 40);
+  assert.match(image.source, /^data:image\/png;base64,/);
+  const decoded = await loadImage(image.source);
+  assert.deepEqual([decoded.width, decoded.height], [40, 24]);
+  const stretched = await prepareCopyImage(bytes, "jpg", 40, 50);
+  assert.deepEqual([stretched.width, stretched.height], [40, 50]);
+  const original = await prepareCopyImage(bytes, "jpg", 40, undefined, false);
+  assert.match(original.source, /^data:image\/jpeg;base64,/);
+  assert.deepEqual(
+    Buffer.from(original.source.split(",")[1], "base64"),
+    Buffer.from(bytes),
+  );
+  await assert.rejects(
+    prepareCopyImage(bytes, "jpg", 10000, 4000),
+    /megapixel/,
+  );
+});
+
+test("saved copy settings validate macro typography and numeric bounds", () => {
+  const invalid = readStoredData({
+    settings: {
+      width: 90000,
+      fontSize: 1,
+      lineWidth: 1.5,
+      copyFontSize: "999",
+      copyTextColor: "red;",
+    },
+  }).settings;
+  assert.equal(invalid.width, defaults.width);
+  assert.equal(invalid.fontSize, defaults.fontSize);
+  assert.equal(invalid.lineWidth, defaults.lineWidth);
+  assert.equal(invalid.copyFontSize, "");
+  assert.equal(invalid.copyTextColor, "");
+  const valid = readStoredData({
+    settings: {
+      copyFontFamily: "Arial",
+      copyFontSize: "16",
+      copyTextColor: "#123456",
+    },
+  }).settings;
+  assert.equal(valid.copyFontFamily, "Arial");
+  assert.equal(valid.copyFontSize, "16");
+  assert.equal(valid.copyTextColor, "#123456");
 });
 test("rich export fails before writing clipboard on missing and remote images", async () => {
   const before = { ...clipboard.last };

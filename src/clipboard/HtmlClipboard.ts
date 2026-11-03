@@ -1,7 +1,9 @@
 import { App, Component, MarkdownRenderer, TFile } from "obsidian";
 import { maskCode, parseImages } from "../sizing/ImageEmbedParser";
 import { Settings } from "../settings";
-import { imageMime, toDataURL, writeRich } from "./ClipboardWriter";
+import { writeRich } from "./ClipboardWriter";
+import { prepareCopyImage } from "./CopyImage";
+import { formatCopy } from "./CopyFormatting";
 export async function copyMarkdown(
   app: App,
   markdown: string,
@@ -65,10 +67,6 @@ export async function copyMarkdown(
         if (!(file instanceof TFile))
           throw new Error(`Image not found: ${embed.target}`);
         const img = createEl("img");
-        img.src = toDataURL(
-          await app.vault.readBinary(file),
-          imageMime(file.extension),
-        );
         img.alt =
           embed.label.replace(/(?:^|\|)\d+(?:x\d+)?$/, "") || file.basename;
         const width = settings.normalizeCopy
@@ -76,18 +74,32 @@ export async function copyMarkdown(
           : settings.preserveResize
             ? embed.width
             : undefined;
-        if (width) {
-          img.width = width;
-          img.setCssStyles({ width: `${width}px` });
-        }
-        if (
+        const height =
           settings.preserveResize &&
           embed.height &&
           (!settings.normalizeCopy || settings.preserveHeight)
-        ) {
-          img.height = embed.height;
-          img.setCssStyles({ height: `${embed.height}px` });
-        } else img.setCssStyles({ height: "auto" });
+            ? embed.height
+            : undefined;
+        try {
+          const preparedImage = await prepareCopyImage(
+            await app.vault.readBinary(file),
+            file.extension,
+            width,
+            height,
+            settings.movidesk,
+          );
+          img.src = preparedImage.source;
+          img.width = preparedImage.width;
+          img.height = preparedImage.height;
+          img.setCssStyles({
+            width: `${img.width}px`,
+            height: settings.movidesk ? "auto" : `${img.height}px`,
+          });
+        } catch (error) {
+          throw new Error(
+            `Cannot copy ${file.path}: ${String(error)}. Clipboard unchanged.`,
+          );
+        }
         img.setCssStyles({ maxWidth: "100%" });
         fragment.append(img);
         offset = match.index + match[0].length;
@@ -149,10 +161,7 @@ export async function copyMarkdown(
         }),
       );
     }
-    if (!settings.preserveFormatting)
-      root
-        .querySelectorAll("strong,em,h1,h2,h3,h4,h5,h6,blockquote,code")
-        .forEach((el) => el.replaceWith(...Array.from(el.childNodes)));
+    formatCopy(root, settings);
     const plain = root.cloneNode(true) as HTMLElement;
     plain
       .querySelectorAll("img")
@@ -162,7 +171,12 @@ export async function copyMarkdown(
     plain
       .querySelectorAll("p,div,li,tr,h1,h2,h3,h4,pre,blockquote,br")
       .forEach((el) => el.append("\n"));
-    await writeRich(root.outerHTML, plain.textContent || "");
+    const html = root.innerHTML;
+    if (html.length > 32 * 1024 * 1024)
+      throw new Error(
+        "Copy exceeds 32 MB. Copy fewer images or enable image-size normalization. Clipboard unchanged.",
+      );
+    await writeRich(html, plain.textContent || "");
   } finally {
     owner.unload();
     root.remove();

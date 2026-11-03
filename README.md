@@ -33,9 +33,17 @@ Requires **Obsidian Desktop 1.8.0 or later**.
 2. Right-click an image and choose **Annotate**.
 3. Add your annotations and choose **Save as new**.
 4. Run **Visual Kit: Normalize image sizes** to set a consistent width.
-5. Select your documentation and run **Visual Kit: Copy with images**. Text inherits the destination editor's font and color; optional image-size normalization is available in settings.
+5. Select your documentation and run **Visual Kit: Copy with images**. Enable **Destination compatibility mode** for inline text and PNG images resized to their copied dimensions.
 
 You can also run **Copy with images** from the command palette. Without a selection, copy commands use the entire note. Formatting and image support depend on the destination editor.
+
+### Copying to Movidesk
+
+Paste at the desired position inside your macro. Compatibility mode avoids outer blocks that can reset the destination font. If Movidesk still resets typography, set **Destination font**, **Destination font size (px)**, and **Destination text color** to match your macro; leave them empty for inheritance. Disable **Preserve formatting** if you also want to remove emphasis.
+
+Use **Normalize image sizes on copy** for a consistent width, or **Preserve resize** to honor embed dimensions. Compatibility mode bakes that size into PNG pixels without modifying source files. GIF animation is flattened. Export SVG files as PNG before rich copying.
+
+Images are embedded in clipboard HTML, not uploaded to Movidesk. If images disappear after saving or reopening a ticket, use Movidesk's image upload tool and verify the saved ticket. Copying cannot override destination security filters. Invalid images leave the clipboard unchanged with a named error. Large batches may need to be split.
 
 ### Editor shortcuts
 

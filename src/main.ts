@@ -10,8 +10,11 @@ import {
   Menu,
   type SettingDefinitionGroup,
   type SettingDefinitionRender,
+  type TextComponent,
+  type DropdownComponent,
 } from "obsidian";
 import { defaults, Settings } from "./settings";
+import { settingDescriptions } from "./settingDescriptions";
 import { DuplicateIndex } from "./duplicates/DuplicateIndex";
 import { readStoredData } from "./storage";
 import { isImage, parseImages, resizedEmbed } from "./sizing/ImageEmbedParser";
@@ -353,24 +356,8 @@ export default class VisualKit extends Plugin {
           })().catch((e) => new Notice(String(e)));
         }),
     );
-    menu.addItem((i) =>
-      i
-        .setTitle("Copy image with annotations")
-        .setIcon("copy")
-        .onClick(() => {
-          // Saved PNGs already contain the flattened annotations; unsaved edits
-          // are copied by the editor's Copy action.
-          void this.app.vault
-            .readBinary(file)
-            .then((bytes) =>
-              writeImage(toDataURL(bytes, imageMime(file.extension))),
-            )
-            .then(() => {
-              new Notice("Annotated image copied");
-            })
-            .catch((error) => new Notice(String(error)));
-        }),
-    );
+    // Saved PNGs already contain flattened annotations; Copy image handles them.
+    // Unsaved edits are copied by the editor's Copy action.
     menu.addItem((i) =>
       i
         .setTitle("Open image")
@@ -463,34 +450,59 @@ export default class VisualKit extends Plugin {
         this.titleEl.setText("Normalize image sizes");
         let width: number | undefined = defaultWidth,
           selection = false;
+        let customWidth = String(defaultWidth);
+        let widthInput: TextComponent;
+        let presetInput: DropdownComponent;
         const before = editor.getValue();
         new Setting(this.contentEl)
           .setName("Width (px)")
-          .addText((t) =>
-            t.setValue(String(width)).onChange((v) => (width = Number(v))),
-          );
-        new Setting(this.contentEl).setName("Preset").addDropdown((d) =>
-          d
-            .addOptions({
+          .setDesc(
+            "Width from 1 to 16384 pixels. Editing this value selects custom.",
+          )
+          .addText((t) => {
+            widthInput = t;
+            t.setValue(customWidth).onChange((v) => {
+              customWidth = v;
+              width = Number(v);
+              presetInput.setValue("custom");
+            });
+          });
+        new Setting(this.contentEl)
+          .setName("Preset")
+          .setDesc(
+            "Original removes embed dimensions; Custom restores your entered width.",
+          )
+          .addDropdown((d) => {
+            presetInput = d;
+            d.addOptions({
               custom: "Custom",
               400: "Small — 400px",
               600: "Medium — 600px",
               800: "Large — 800px",
               original: "Original",
-            })
-            .onChange((v) => {
-              if (v !== "custom")
-                width = v === "original" ? undefined : Number(v);
-            }),
-        );
-        new Setting(this.contentEl).setName("Scope").addDropdown((d) =>
-          d
-            .addOptions({
-              note: "Current note",
-              selection: "Current selection",
-            })
-            .onChange((v) => (selection = v === "selection")),
-        );
+            }).onChange((v) => {
+              width =
+                v === "custom"
+                  ? Number(customWidth)
+                  : v === "original"
+                    ? undefined
+                    : Number(v);
+              widthInput.setValue(width === undefined ? "" : String(width));
+            });
+          });
+        new Setting(this.contentEl)
+          .setName("Scope")
+          .setDesc(
+            "Change all images in the note or only images inside the selected text.",
+          )
+          .addDropdown((d) =>
+            d
+              .addOptions({
+                note: "Current note",
+                selection: "Current selection",
+              })
+              .onChange((v) => (selection = v === "selection")),
+          );
         new Setting(this.contentEl)
           .addButton((b) =>
             b.setButtonText("Cancel").onClick(() => this.close()),
@@ -500,6 +512,17 @@ export default class VisualKit extends Plugin {
               .setButtonText("Apply")
               .setCta()
               .onClick(() => {
+                if (
+                  width !== undefined &&
+                  (!Number.isInteger(width) || width < 1 || width > 16384)
+                ) {
+                  new Notice("Width must be between 1 and 16384");
+                  return;
+                }
+                if (selection && !editor.getSelection()) {
+                  new Notice("Select content first");
+                  return;
+                }
                 if (editor.getValue() !== before) {
                   new Notice("Note changed; reopen normalization");
                   return;
@@ -546,7 +569,10 @@ class SettingsTab extends PluginSettingTab {
           },
           { key: "preserveFormatting", name: "Preserve formatting" },
           { key: "preserveResize", name: "Preserve resize" },
-          { key: "movidesk", name: "Movidesk optimization" },
+          { key: "movidesk", name: "Destination compatibility mode" },
+          { key: "copyFontFamily", name: "Destination font (optional)" },
+          { key: "copyFontSize", name: "Destination font size (px, optional)" },
+          { key: "copyTextColor", name: "Destination text color (optional)" },
         ],
       },
       {
@@ -634,7 +660,9 @@ class SettingsTab extends PluginSettingTab {
   private definition(field: SettingField): RenderedSetting {
     return {
       name: field.name,
+      desc: settingDescriptions[field.key],
       render: (setting) => {
+        setting.setDesc(settingDescriptions[field.key]);
         const value = this.plugin.settings[field.key];
         const save = (updated: string | boolean | number) => {
           Object.assign(this.plugin.settings, { [field.key]: updated });
@@ -667,7 +695,23 @@ class SettingsTab extends PluginSettingTab {
                   n <= (field.max ?? 16384)
                 )
                   save(n);
-              } else save(input);
+              } else {
+                if (
+                  field.key === "copyFontSize" &&
+                  input !== "" &&
+                  (!/^\d+$/.test(input) ||
+                    Number(input) < 8 ||
+                    Number(input) > 72)
+                )
+                  return;
+                if (
+                  field.key === "copyTextColor" &&
+                  input !== "" &&
+                  !/^#[0-9a-f]{6}$/i.test(input)
+                )
+                  return;
+                save(input);
+              }
             }),
           );
       },

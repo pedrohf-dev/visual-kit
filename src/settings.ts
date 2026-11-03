@@ -3,6 +3,9 @@ export interface Settings {
   preserveFormatting: boolean;
   preserveResize: boolean;
   movidesk: boolean;
+  copyFontFamily: string;
+  copyFontSize: string;
+  copyTextColor: string;
   color: string;
   lineWidth: number;
   fontSize: number;
@@ -29,6 +32,9 @@ export const defaults: Settings = {
   preserveFormatting: true,
   preserveResize: true,
   movidesk: true,
+  copyFontFamily: "",
+  copyFontSize: "",
+  copyTextColor: "",
   color: "#ef4444",
   lineWidth: 4,
   fontSize: 28,

@@ -13,7 +13,36 @@ export function readStoredData(value: unknown): {
   if (record(value.settings)) {
     for (const key of Object.keys(defaults) as (keyof Settings)[]) {
       const candidate = value.settings[key];
+      if (
+        key === "copyFontSize" &&
+        candidate !== "" &&
+        (typeof candidate !== "string" ||
+          !/^\d+$/.test(candidate) ||
+          Number(candidate) < 8 ||
+          Number(candidate) > 72)
+      )
+        continue;
+      if (
+        key === "copyTextColor" &&
+        candidate !== "" &&
+        (typeof candidate !== "string" || !/^#[0-9a-f]{6}$/i.test(candidate))
+      )
+        continue;
       if (typeof candidate !== typeof defaults[key]) continue;
+      if (typeof candidate === "number") {
+        const limits =
+          key === "width"
+            ? [1, 16384]
+            : key === "fontSize"
+              ? [8, 300]
+              : [1, 100];
+        if (
+          !Number.isInteger(candidate) ||
+          candidate < limits[0] ||
+          candidate > limits[1]
+        )
+          continue;
+      }
       if (
         typeof candidate === "number" &&
         (!Number.isFinite(candidate) || candidate < 1)
