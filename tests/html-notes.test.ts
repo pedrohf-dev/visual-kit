@@ -1,0 +1,425 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { JSDOM } from "jsdom";
+import { loadImage } from "canvas";
+import {
+  HtmlDocument,
+  sanitizeHtml,
+  parseHtml,
+  newDocument,
+  FRAME_POLICY,
+  plainText,
+  replaceBody,
+  MAX_HTML,
+} from "../src/html-notes/HtmlDocument";
+import { HtmlPersistence, HtmlConflict } from "../src/html-notes/Persistence";
+import { HtmlAssets, relativeImage, vaultPath } from "../src/html-notes/Assets";
+import { exportHtml, copyHtml } from "../src/html-notes/Clipboard";
+import { createHtmlNote, registerHtmlNotes } from "../src/html-notes/register";
+import { defaults } from "../src/settings";
+import { readStoredData } from "../src/storage";
+import { TFile, TFolder, Notice, requests } from "./obsidian-mock";
+import { DuplicateIndex } from "../src/duplicates/DuplicateIndex";
+import { clipboard } from "./electron-mock";
+
+const dom = new JSDOM("", { url: "https://obsidian.invalid" }).window;
+Object.assign(globalThis, {
+  document: dom.document,
+  window: dom,
+  NodeFilter: dom.NodeFilter,
+  createEl: (tag: string) => dom.document.createElement(tag),
+  createFragment: () => dom.document.createDocumentFragment(),
+  createSpan: () => dom.document.createElement("span"),
+  createImageBitmap: async (blob: Blob) =>
+    Object.assign(await loadImage(Buffer.from(await blob.arrayBuffer())), {
+      close() {},
+    }),
+});
+Object.defineProperty(dom.HTMLElement.prototype, "setCssStyles", {
+  value(this: HTMLElement, styles: Partial<CSSStyleDeclaration>) {
+    Object.assign(this.style, styles);
+  },
+});
+const ticket = readFileSync("tests/fixtures/support-ticket.html", "utf8");
+const unsafe = readFileSync("tests/fixtures/unsupported-ticket.html", "utf8");
+
+test("body replacement ignores deceptive titles/comments and respects quoted tag boundaries", () => {
+  const source =
+    "<!doctype html><html><head><title>Literal &lt;body&gt; label</title><!-- <body>keep</body> --></head><body><p>Original</p></body></html>";
+  const model = new HtmlDocument(source);
+  assert.deepEqual(model.safe.issues, []);
+  model.editBody("<p>Updated</p>");
+  assert.match(model.source, /<!-- <body>keep<\/body> -->/);
+  assert.match(model.source, /<body><p>Updated<\/p><\/body>/);
+  assert.equal(
+    replaceBody('<body title="a>b"><p>Old</p></body>', "<p>New</p>"),
+    '<body title="a>b"><p>New</p></body>',
+  );
+  const malformed = new HtmlDocument(
+    "<html><head><title>x</title></head><body><p>Inside</p></body>Outside</html>",
+  );
+  assert.ok(malformed.safe.issues.length);
+});
+
+test("oversized source remains editable and intact without parsing a rendered representation", () => {
+  const source = "x".repeat(MAX_HTML + 1),
+    model = new HtmlDocument(source);
+  assert.equal(model.source, source);
+  assert.equal(model.safe.html, "");
+  assert.ok(model.safe.issues.length);
+  model.setSource("<p>Within limit</p>");
+  assert.deepEqual(model.safe.issues, []);
+});
+
+function fixture() {
+  const files = new Map<string, TFile>(),
+    content = new Map<string, string>(),
+    binaries = new Map<string, ArrayBuffer>(),
+    folders = new Set<string>();
+  const note = new TFile("tickets/response.html");
+  files.set(note.path, note);
+  content.set(note.path, ticket);
+  let binaryWrites = 0;
+  const app = {
+    vault: {
+      getAbstractFileByPath: (path: string) =>
+        files.get(path) || (folders.has(path) ? new TFolder(path) : null),
+      getFiles: () => [...files.values()],
+      createFolder: async (path: string) => {
+        folders.add(path);
+      },
+      create: async (path: string, source: string) => {
+        if (files.has(path)) throw new Error("Already exists");
+        const file = new TFile(path);
+        files.set(path, file);
+        content.set(path, source);
+        return file;
+      },
+      read: async (file: TFile) => content.get(file.path)!,
+      readBinary: async (file: TFile) => binaries.get(file.path)!,
+      createBinary: async (path: string, bytes: ArrayBuffer) => {
+        if (files.has(path)) throw new Error("Already exists");
+        const file = new TFile(path, bytes.byteLength);
+        files.set(path, file);
+        binaries.set(path, bytes);
+        binaryWrites++;
+        return file;
+      },
+    },
+  };
+  const plugin = {
+    app,
+    settings: { ...defaults },
+    index: new DuplicateIndex(app as never),
+    persist: async () => {},
+  };
+  return {
+    plugin,
+    note,
+    files,
+    content,
+    binaries,
+    binaryWrites: () => binaryWrites,
+  };
+}
+
+test("round-trip proof: a representative support response remains byte-identical without editing", async () => {
+  const model = new HtmlDocument(ticket);
+  assert.deepEqual(model.safe.issues, []);
+  const persistence = new HtmlPersistence(model.source, async () => {
+    throw new Error("No write should occur");
+  });
+  await persistence.save();
+  assert.equal(model.source, ticket);
+  assert.match(model.safe.bodyStyle, /font-family/);
+});
+test("round-trip proof: editing text preserves spans, inline formatting, lists, links and image sizes", () => {
+  const model = new HtmlDocument(ticket),
+    body = parseHtml(model.safe.html).body;
+  body.querySelector("strong")!.textContent = "team";
+  model.editBody(body.innerHTML);
+  const reopened = new HtmlDocument(model.source),
+    parsed = parseHtml(reopened.safe.html);
+  assert.deepEqual(reopened.safe.issues, []);
+  assert.equal(parsed.querySelector("th")!.getAttribute("colspan"), "2");
+  assert.equal(parsed.querySelector("td")!.getAttribute("rowspan"), "2");
+  assert.equal(parsed.querySelector("img")!.getAttribute("width"), "480");
+  assert.equal(
+    parsed.querySelector("img")!.getAttribute("src"),
+    "../attachments/screen%20one.png",
+  );
+  assert.equal(parsed.querySelector("ol")!.getAttribute("start"), "2");
+  assert.ok(parsed.querySelector("ol ul li b"));
+  assert.match(model.source, /<title>Support ticket response<\/title>/);
+  assert.match(
+    parsed.querySelector("span")!.getAttribute("style")!,
+    /background-color/,
+  );
+});
+test("unsupported documents retain original source, render safely, and refuse visual overwrite", () => {
+  const model = new HtmlDocument(unsafe);
+  assert.equal(model.source, unsafe);
+  assert.ok(model.safe.issues.length > 0);
+  const root = parseHtml(model.safe.html);
+  assert.equal(
+    root.querySelector("script,style,iframe,object,[onerror],[onclick]"),
+    null,
+  );
+  assert.doesNotMatch(
+    model.safe.html,
+    /javascript:|position:|background-image:|https:\/\/attacker/,
+  );
+  assert.throws(() => model.editBody("<p>degraded</p>"));
+  assert.equal(model.source, unsafe);
+});
+test("sanitization rejects malicious URLs, CSS resources, forms, SVG and DOM clobbering", () => {
+  for (const payload of [
+    '<a href="jav&#x61;script:alert(1)">x</a>',
+    '<img src="file:///secret.png" onerror="alert(1)">',
+    '<svg><a href="javascript:alert(1)">x</a></svg>',
+    '<form id="body"><input name="innerHTML"></form>',
+    '<div style="background-color:red;background-image:url(https://tracker.invalid);position:fixed">x</div>',
+    '<img src="data:image/svg+xml;base64,PHN2Zz4=">',
+    '<object data="file:///secret"></object>',
+  ]) {
+    const result = sanitizeHtml(payload);
+    assert.ok(result.issues.length, payload);
+    const root = parseHtml(result.html);
+    assert.equal(
+      root.querySelector("svg,form,input,object,[onerror],[id],[name]"),
+      null,
+    );
+    assert.doesNotMatch(
+      result.html,
+      /javascript:|file:\/|data:image\/svg|url\(|position:/i,
+    );
+  }
+  assert.match(FRAME_POLICY, /script-src 'none'/);
+  assert.match(FRAME_POLICY, /connect-src 'none'/);
+});
+test("plain-text output includes paragraphs, cell separators, image labels and line breaks", () => {
+  const plain = plainText(
+    '<p>Hello<br>world</p><table><tr><td>A</td><td>B</td></tr></table><img alt="Evidence" src="a.png">',
+  );
+  assert.match(plain, /Hello\nworld\n/);
+  assert.match(plain, /A\tB\t/);
+  assert.match(plain, /\[Evidence\]/);
+});
+test("atomic saves never overwrite externally modified content", async () => {
+  let disk = "original";
+  const persistence = new HtmlPersistence(disk, async (change) => {
+    disk = change(disk);
+  });
+  persistence.current = "local edit";
+  disk = "external edit";
+  await assert.rejects(persistence.save(), HtmlConflict);
+  assert.equal(disk, "external edit");
+  assert.equal(persistence.current, "local edit");
+});
+test("serialized autosave retains edits made during a pending write and recovers from errors", async () => {
+  let disk = "a",
+    release!: () => void;
+  let first = true,
+    active = 0,
+    max = 0;
+  const persistence = new HtmlPersistence(disk, async (change) => {
+    active++;
+    max = Math.max(max, active);
+    if (first) {
+      first = false;
+      await new Promise<void>((resolve) => {
+        release = resolve;
+      });
+    }
+    disk = change(disk);
+    active--;
+  });
+  persistence.current = "b";
+  const pending = persistence.save();
+  await new Promise((resolve) => setImmediate(resolve));
+  persistence.current = "c";
+  const next = persistence.save();
+  release();
+  await Promise.all([pending, next]);
+  assert.equal(disk, "c");
+  assert.equal(max, 1);
+  assert.equal(persistence.dirty, false);
+  const failed = new HtmlPersistence("a", async () => {
+    throw new Error("Disk full");
+  });
+  failed.current = "b";
+  await assert.rejects(failed.save(), /Disk full/);
+  assert.equal(failed.dirty, true);
+  assert.equal(failed.baseline, "a");
+});
+test("new HTML notes use real vault files and avoid overwrites and directory traversal", async () => {
+  const f = fixture();
+  const first = await createHtmlNote(
+      f.plugin as never,
+      "tickets",
+      "Response.html",
+    ),
+    next = await createHtmlNote(f.plugin as never, "tickets", "Response.html");
+  assert.equal(first.path, "tickets/Response.html");
+  assert.equal(next.path, "tickets/Response-1.html");
+  assert.equal(f.content.get(first.path), newDocument());
+  await assert.rejects(createHtmlNote(f.plugin as never, "../outside", "bad"));
+});
+test("portable vault paths resolve encoded filenames and reject external and escaping paths", () => {
+  assert.equal(
+    vaultPath("../attachments/screen%20one.png", "tickets/note.html"),
+    "attachments/screen one.png",
+  );
+  assert.equal(
+    relativeImage("attachments/screen one.png", "tickets/note.html"),
+    "../attachments/screen%20one.png",
+  );
+  for (const source of [
+    "../../secret",
+    "file:///secret",
+    "app://secret",
+    "/secret",
+    "..%5Csecret",
+  ])
+    assert.equal(vaultPath(source, "tickets/note.html"), null);
+});
+test("image imports reuse validation, attachment naming and deduplication while preserving dimensions", async () => {
+  const f = fixture(),
+    assets = new HtmlAssets(f.plugin as never),
+    root = document.createElement("div");
+  const png = new File(
+    [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 9])],
+    "screen.png",
+  );
+  root.innerHTML =
+    '<p>Before<img src="cid:private" width="480" height="270">After</p>';
+  assert.deepEqual(await assets.import(root, f.note as never, [png]), []);
+  const source = root.querySelector("img")!.getAttribute("src")!;
+  assert.match(source, /^\.\.\/attachments\//);
+  assert.equal(f.binaryWrites(), 1);
+  assert.equal(root.querySelector("img")!.width, 480);
+  root.querySelector("img")!.src = "cid:another";
+  await assets.import(root, f.note as never, [png]);
+  assert.equal(f.binaryWrites(), 1);
+  await assert.rejects(
+    assets.validate(new File(["<svg onload='x'/>"], "a.svg")),
+    /SVG/,
+  );
+});
+test("failed remote images retain their position and reference with actionable feedback", async () => {
+  const f = fixture(),
+    root = document.createElement("div");
+  root.innerHTML = '<p>Before<img src="https://example.com/private">After</p>';
+  const errors = await new HtmlAssets(f.plugin as never).import(
+    root,
+    f.note as never,
+  );
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /browser login/);
+  assert.equal(
+    root.querySelector("img")!.getAttribute("src"),
+    "https://example.com/private",
+  );
+  assert.match(root.textContent!, /BeforeAfter/);
+});
+test("blocking remote images prevents network requests", async () => {
+  const f = fixture();
+  f.plugin.settings.htmlExternalImages = "block";
+  requests.length = 0;
+  await assert.rejects(
+    new HtmlAssets(f.plugin as never).bytes(
+      "https://example.com/private",
+      f.note as never,
+    ),
+    /blocked/,
+  );
+  assert.equal(requests.length, 0);
+});
+test("rich HTML copy exports fragments with typography, tables and both clipboard formats", async () => {
+  const f = fixture();
+  const html =
+    '<p style="font-family:Georgia;color:#123456;font-size:18px">Hello <b>team</b></p><table><tr><td colspan="2">Value</td></tr></table>';
+  await copyHtml(f.plugin as never, f.note as never, html);
+  assert.match(clipboard.last.html, /font-family:Georgia/);
+  assert.match(clipboard.last.html, /colspan="2"/);
+  assert.match(clipboard.last.text, /Hello team/);
+  assert.doesNotMatch(clipboard.last.html, /<html|<body|<head/);
+});
+test("image copy embeds vault bytes, preserves sizes and leaves the clipboard unchanged on failure", async () => {
+  const f = fixture(),
+    canvas = document.createElement("canvas");
+  canvas.width = 20;
+  canvas.height = 10;
+  const data = Buffer.from(
+    canvas.toDataURL("image/png").split(",")[1],
+    "base64",
+  );
+  await f.plugin.app.vault.createBinary(
+    "attachments/evidence.png",
+    Uint8Array.from(data).buffer,
+  );
+  const result = await exportHtml(
+    f.plugin as never,
+    f.note as never,
+    '<p>Evidence<img src="../attachments/evidence.png" width="10" height="5"></p>',
+  );
+  assert.match(result.html, /data:image\/png;base64,/);
+  assert.match(result.html, /width="10" height="5"/);
+  assert.doesNotMatch(result.html, /app:|\.\.\/attachments/);
+  clipboard.last = { html: "untouched", text: "untouched" };
+  await assert.rejects(
+    copyHtml(f.plugin as never, f.note as never, '<img src="../missing.png">'),
+    /Clipboard unchanged/,
+  );
+  assert.equal(clipboard.last.html, "untouched");
+});
+test("HTML handler conflicts do not unregister other plugins and explicit opening remains available", () => {
+  const commands: any[] = [],
+    handlers: any[] = [];
+  let registered = 0;
+  const plugin = {
+    settings: { ...defaults },
+    registerView() {
+      registered++;
+    },
+    registerExtensions() {
+      throw new Error("Already registered");
+    },
+    addCommand(command: unknown) {
+      commands.push(command);
+    },
+    registerEvent() {},
+    app: {
+      workspace: {
+        on(_event: string, callback: unknown) {
+          handlers.push(callback);
+        },
+      },
+    },
+  };
+  Notice.messages.length = 0;
+  registerHtmlNotes(plugin as never);
+  assert.equal(registered, 1);
+  assert.equal(commands.length, 3);
+  assert.ok(
+    Notice.messages.every((message) => message.includes("Another plugin")),
+  );
+  assert.equal(handlers.length, 1);
+  plugin.settings.htmlNotes = false;
+  registerHtmlNotes(plugin as never);
+  assert.equal(registered, 1);
+});
+test("HTML settings validate modes and default to preserving document typography", () => {
+  const settings = readStoredData({
+    settings: {
+      htmlDefaultMode: "invalid",
+      htmlExternalImages: "script",
+      htmlNotes: false,
+    },
+  }).settings;
+  assert.equal(settings.htmlDefaultMode, "visual");
+  assert.equal(settings.htmlExternalImages, "download");
+  assert.equal(settings.htmlNotes, false);
+  assert.equal(settings.htmlClipboardCompatibility, false);
+});

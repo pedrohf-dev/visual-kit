@@ -14,6 +14,16 @@ export function readStoredData(value: unknown): {
     for (const key of Object.keys(defaults) as (keyof Settings)[]) {
       const candidate = value.settings[key];
       if (
+        key === "htmlDefaultMode" &&
+        !["visual", "source", "preview"].includes(String(candidate))
+      )
+        continue;
+      if (
+        key === "htmlExternalImages" &&
+        !["download", "block"].includes(String(candidate))
+      )
+        continue;
+      if (
         key === "copyFontSize" &&
         candidate !== "" &&
         (typeof candidate !== "string" ||

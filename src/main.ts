@@ -26,6 +26,7 @@ import { copyMarkdown } from "./clipboard/HtmlClipboard";
 import { imageMime, toDataURL, writeImage } from "./clipboard/ClipboardWriter";
 import { EmbedContext, ImageEditorView } from "./editor/ImageEditorView";
 import { askText } from "./ui";
+import { registerHtmlNotes } from "./html-notes/register";
 
 export default class VisualKit extends Plugin {
   settings: Settings = { ...defaults };
@@ -41,6 +42,7 @@ export default class VisualKit extends Plugin {
       for (const e of stored.index)
         if (e.path && e.hash) this.index.entries.set(e.path, e);
     this.paste = new MultiImagePasteHandler(this);
+    registerHtmlNotes(this);
     this.addSettingTab(new SettingsTab(this));
     this.updateRibbon();
     const guarded = (action: () => Promise<unknown>) => {
@@ -624,6 +626,35 @@ class SettingsTab extends PluginSettingTab {
           {
             key: "folder",
             name: "Image folder: attachments, attachments/{note}, images, same-folder or custom path",
+          },
+        ],
+      },
+      {
+        name: "HTML notes",
+        fields: [
+          { key: "htmlNotes", name: "Enable HTML notes" },
+          {
+            key: "htmlRegisterExtensions",
+            name: "Open HTML files automatically",
+          },
+          {
+            key: "htmlDefaultMode",
+            name: "Default opening mode",
+            options: { visual: "Visual", source: "Source", preview: "Preview" },
+          },
+          { key: "htmlFolder", name: "Default HTML note folder" },
+          { key: "htmlImportImages", name: "Import pasted images into vault" },
+          {
+            key: "htmlExternalImages",
+            name: "External images",
+            options: {
+              download: "Download when pasting or importing",
+              block: "Block remote downloads",
+            },
+          },
+          {
+            key: "htmlClipboardCompatibility",
+            name: "Use destination compatibility for HTML copy",
           },
         ],
       },

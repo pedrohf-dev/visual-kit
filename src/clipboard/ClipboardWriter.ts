@@ -1,6 +1,17 @@
 import { clipboard, nativeImage } from "electron";
-export function writeRich(html: string, text: string): Promise<void> {
-  clipboard.write({ html, text });
+export function writeRich(
+  html: string,
+  text: string,
+  imageDataURL?: string,
+): Promise<void> {
+  const image = imageDataURL
+    ? nativeImage.createFromDataURL(imageDataURL)
+    : undefined;
+  clipboard.write({
+    html,
+    text,
+    ...(image && !image.isEmpty() ? { image } : {}),
+  });
   return Promise.resolve();
 }
 export function writeImage(dataURL: string): Promise<void> {

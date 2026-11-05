@@ -1,4 +1,11 @@
 export interface Settings {
+  htmlNotes: boolean;
+  htmlRegisterExtensions: boolean;
+  htmlDefaultMode: "visual" | "source" | "preview";
+  htmlFolder: string;
+  htmlImportImages: boolean;
+  htmlExternalImages: "download" | "block";
+  htmlClipboardCompatibility: boolean;
   copyMode: "dedicated" | "smart" | "always";
   preserveFormatting: boolean;
   preserveResize: boolean;
@@ -28,6 +35,13 @@ export interface Settings {
   quickTools: boolean;
 }
 export const defaults: Settings = {
+  htmlNotes: true,
+  htmlRegisterExtensions: true,
+  htmlDefaultMode: "visual",
+  htmlFolder: "",
+  htmlImportImages: true,
+  htmlExternalImages: "download",
+  htmlClipboardCompatibility: false,
   copyMode: "smart",
   preserveFormatting: true,
   preserveResize: true,

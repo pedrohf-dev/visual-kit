@@ -1,14 +1,24 @@
-## Visual Kit 0.7.8
+## Visual Kit 0.8.0 — HTML notes
 
-- Destination compatibility mode now copies inline content without outer paragraph, heading, or code-font wrappers. Optional font, size, and color overrides let you match a macro when the destination does not inherit caret formatting.
-- Decode images before copying. Compatibility mode exports PNG pixels at the requested dimensions, keeping their size even when the destination strips width attributes. Animation is flattened; SVG must be exported to PNG first.
-- Reject empty, corrupt, oversized, or unsupported images before changing the clipboard. Limits: 25 MB per source image, 32 megapixels per exported image, and 32 MB of clipboard HTML.
-- Add descriptions to every setting and validate saved numeric preferences.
-- Remove the duplicate Copy image with annotations menu item. Copy image includes saved annotations; the annotation editor's Copy action includes unsaved edits.
-- Fix normalization presets: the width field now matches the selected preset and Custom restores the entered width. Invalid widths keep the dialog open.
+Create real `.html` notes in your vault and exchange formatted responses with ticket systems, email clients and other rich-text editors.
 
-Destination editors still control paste styling and image retention after saving. Visual Kit embeds images locally; it does not upload them to Movidesk. If the destination removes embedded images, use its image upload action.
+- Create notes from the command palette or a folder menu, with safe filename collision handling.
+- Edit visually with font/color/highlight controls, alignment, lists, links, separators, tables and images. Switch to syntax-highlighted Source or read-only Preview without losing content.
+- Autosave locally, or use Save / Ctrl+S / Cmd+S. Unedited files remain byte-identical. External changes stop conflicting writes and offer reload, source resolution or a recovery copy.
+- Paste rich HTML and images in order using existing attachment folders, naming, validation and deduplication. Resize display dimensions and reuse the annotation editor through an HTML adapter.
+- Copy selected content as rich HTML and plain text, or explicitly copy the whole note. Vault images become embedded clipboard images. Resource URLs are never saved or exported. HTML destination compatibility is a separate opt-in.
+- Preserve unsupported source in Source mode. Unsupported pasted markup requires an explicit choice to preserve its original in a separate file before safe insertion.
+- Sanitize with DOMPurify, allowlist inline CSS and render inside a script-disabled frame. Inactive-document parsing prevents detached image requests. Opening notes does not contact image servers.
+- Add preservation, security, clipboard and persistence tests plus real Chromium editor/view integration tests. Existing Markdown workflows remain unchanged.
 
-Download main.js, manifest.json, and styles.css into your vault's .obsidian/plugins/visual-kit/ directory. Restart Obsidian and enable Visual Kit.
+### Compatibility and limits
 
-All three assets are built and attested by GitHub Actions. The minimum supported version remains Obsidian Desktop 1.8.0.
+Requires Obsidian Desktop 1.8.0 or later. HTML handler conflicts keep the other plugin's handler; **Open in HTML notes** remains available. Reload after changing enablement or automatic handling.
+
+Table spans are retained; visual row/column restructuring of merged tables requires Source. Stylesheets, unsupported structures/CSS and active embeds stay in Source. SVG needs raster export. Mode switches reset that mode's undo history. Native HTML backlinks and graph indexing are not added.
+
+Movidesk and other destination editors control paste filtering and image retention. Authenticated Movidesk acceptance remains a documented manual step; pixel-perfect compatibility is not claimed. See the [HTML notes guide](https://github.com/pedrohf-dev/visual-kit/blob/0.8.0/docs/html-notes.md) for behavior, limits, architecture and the acceptance checklist.
+
+### Install
+
+Download **main.js**, **manifest.json** and **styles.css** into `<your-vault>/.obsidian/plugins/visual-kit/`, then restart Obsidian. All three assets are built and attested by GitHub Actions. Bundled dependency licenses are included in main.js.

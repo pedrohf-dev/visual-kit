@@ -44,6 +44,21 @@ export function htmlToMarkdown(fragment: DocumentFragment) {
   return fragment.textContent || "";
 }
 export class PluginSettingTab {}
+export class TFolder {
+  constructor(public path: string) {}
+}
+export class FileView {
+  app: any;
+  file: TFile | null = null;
+  contentEl!: HTMLElement;
+  constructor(public leaf: unknown) {
+    this.app = (leaf as { app?: unknown })?.app;
+    if (typeof document !== "undefined")
+      this.contentEl = document.createElement("div");
+  }
+  registerEvent() {}
+  async onRename(_file: TFile) {}
+}
 export class MarkdownView {}
 export class Plugin {
   app: any;
@@ -56,6 +71,8 @@ export class Plugin {
   }
   addCommand() {}
   registerEvent() {}
+  registerView() {}
+  registerExtensions() {}
   registerInterval(id: number) {
     window.clearInterval(id);
   }

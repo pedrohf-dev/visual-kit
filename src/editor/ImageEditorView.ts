@@ -43,6 +43,10 @@ export interface EmbedContext {
   embed: ImageEmbed;
   before: string;
 }
+export interface HtmlAnnotationTarget {
+  note: TFile;
+  apply(path: string): Promise<void>;
+}
 export class ImageEditorView extends Modal {
   private canvas!: Canvas;
   private source = "";
@@ -78,6 +82,7 @@ export class ImageEditorView extends Modal {
     private context?: EmbedContext,
     private initial: Tool = "select",
     initialColor?: string,
+    private htmlTarget?: HtmlAnnotationTarget,
   ) {
     super(plugin.app);
     this.color = initialColor ?? plugin.settings.color;
@@ -684,7 +689,9 @@ export class ImageEditorView extends Modal {
     const folder = this.plugin.settings.annotationFolder
       ? imageFolder(
           this.plugin.settings.annotationFolder,
-          this.context?.note.basename || this.file.basename,
+          this.context?.note.basename ||
+            this.htmlTarget?.note.basename ||
+            this.file.basename,
           this.file.parent?.path || "",
         )
       : this.file.parent?.path || "";
@@ -708,6 +715,8 @@ export class ImageEditorView extends Modal {
     this.dirty = false;
     new Notice(`Saved ${path}${copy ? " and copied" : ""}`);
     if (path !== this.file.path && this.context) await this.updateEmbed(path);
+    if (path !== this.file.path && this.htmlTarget)
+      await this.htmlTarget.apply(path);
   }
   private async updateEmbed(path: string) {
     const context = this.context!;

@@ -4,7 +4,7 @@ declare module "electron" {
     isEmpty(): boolean;
   }
   export const clipboard: {
-    write(data: { html: string; text: string }): void;
+    write(data: { html: string; text: string; image?: NativeImage }): void;
     writeImage(image: NativeImage): void;
   };
   export const nativeImage: { createFromDataURL(url: string): NativeImage };

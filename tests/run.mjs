@@ -8,6 +8,7 @@ await build({
     "tests/core.test.ts",
     "tests/workflow.test.ts",
     "tests/render.test.ts",
+    "tests/html-notes.test.ts",
   ],
   outdir: ".test-build",
   outExtension: { ".js": ".cjs" },
@@ -38,6 +39,7 @@ const result = spawnSync(
     ".test-build/core.test.cjs",
     ".test-build/workflow.test.cjs",
     ".test-build/render.test.cjs",
+    ".test-build/html-notes.test.cjs",
   ],
   { stdio: "inherit" },
 );

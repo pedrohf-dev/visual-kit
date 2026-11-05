@@ -16,6 +16,7 @@ A local image toolkit for bug reports, support tickets, and visual documentation
 - **Normalize** — give every image in a note or selection a consistent width.
 - **Deduplicate** — reuse identical images instead of saving extra copies.
 - **Rich copy** — copy formatted text and images together into a rich-text editor.
+- **HTML notes** — create real HTML files with visual, source and preview modes; paste, edit and copy formatted responses with fonts, colors, tables and images.
 
 Save annotated images as new PNGs, keep editable annotations, and undo or redo changes as you work. All image processing happens locally.
 
@@ -38,6 +39,10 @@ Requires **Obsidian Desktop 1.8.0 or later**.
 You can also run **Copy with images** from the command palette. Without a selection, copy commands use the entire note. Formatting and image support depend on the destination editor.
 
 ### Copying to Movidesk
+
+For HTML formatting that survives save/reopen, run **Visual Kit: Create HTML note**. Paste into **Visual**, edit with the toolbar, then select content for **Copy as rich HTML** or use **Copy whole note**. HTML notes autosave and retain unsupported documents in Source mode to protect their original content. See the [HTML notes guide and manual acceptance checklist](docs/html-notes.md).
+
+The options below describe Markdown **Copy with images**. HTML note copy preserves its own typography by default and has a separate destination compatibility opt-in.
 
 Paste at the desired position inside your macro. Compatibility mode avoids outer blocks that can reset the destination font. If Movidesk still resets typography, set **Destination font**, **Destination font size (px)**, and **Destination text color** to match your macro; leave them empty for inheritance. Disable **Preserve formatting** if you also want to remove emphasis.
 

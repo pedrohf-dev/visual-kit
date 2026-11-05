@@ -1,6 +1,20 @@
 import type { Settings } from "./settings";
 
 export const settingDescriptions: Record<keyof Settings, string> = {
+  htmlNotes:
+    "Create and edit real HTML files. Reload Visual Kit after changing this setting. Markdown editing is unchanged.",
+  htmlRegisterExtensions:
+    "Register .html and .htm with this editor. Reload after changing. Other plugins' existing handlers are kept; Open in HTML notes remains available from the file menu.",
+  htmlDefaultMode:
+    "Open in Visual, Source or Preview. Documents with unsupported markup open in Source to prevent silent data loss.",
+  htmlFolder:
+    "Vault-relative folder for new HTML notes. Empty uses the active file's folder. The file explorer context menu uses the selected folder.",
+  htmlImportImages:
+    "Save pasted images in the existing image folder, with validation and duplicate detection. Disabled keeps original references and shows warnings.",
+  htmlExternalImages:
+    "Download public HTTP/HTTPS images only when pasting, importing or copying. Opening a note never contacts image servers. Browser login cookies are not available; paste private image files instead.",
+  htmlClipboardCompatibility:
+    "Opt in to existing destination typography options and PNG rasterization at displayed dimensions. Off preserves HTML note typography. Destination editors may still filter formatting or images.",
   copyMode:
     "Dedicated: use Copy with images only. Smart: also intercept Ctrl/Cmd+C for selections containing images. Always: intercept every nonempty editor selection.",
   preserveFormatting:
