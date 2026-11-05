@@ -29,6 +29,9 @@ export function installViewHarness() {
     createEl: (tag: string) => document.createElement(tag),
   });
   Object.assign(HTMLElement.prototype, {
+    setText(this: HTMLElement, text: string) {
+      this.textContent = text;
+    },
     setCssStyles(this: HTMLElement, styles: Partial<CSSStyleDeclaration>) {
       Object.assign(this.style, styles);
     },
@@ -45,6 +48,7 @@ export function installViewHarness() {
   });
   let view: HtmlNoteView, file: TFile, disk: string;
   let writes = 0;
+  let persists = 0;
   const backups = new Map<string, string>(),
     listeners: Record<string, ((file: TFile) => void)[]> = {};
   Object.assign(window, {
@@ -53,6 +57,7 @@ export function installViewHarness() {
         if (view) await view.onClose();
         backups.clear();
         writes = 0;
+        persists = 0;
         for (const key of Object.keys(listeners)) delete listeners[key];
         disk = source;
         file = new TFile("tickets/response.html");
@@ -82,7 +87,9 @@ export function installViewHarness() {
         const plugin = {
           app,
           settings: { ...defaults },
-          persist: async () => {},
+          persist: async () => {
+            persists++;
+          },
         };
         view = new HtmlNoteView({ app } as never, plugin as never);
         view.file = file as never;
@@ -96,6 +103,9 @@ export function installViewHarness() {
       },
       get writes() {
         return writes;
+      },
+      get persists() {
+        return persists;
       },
       get backups() {
         return [...backups];

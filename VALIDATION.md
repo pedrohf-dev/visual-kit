@@ -1,6 +1,6 @@
 # Implementation validation
 
-Version 0.8.5 validation performed on November 5, 2026. This patch adds the file explorer HTML-note shortcut and keyboard confirmation, and fixes creation at the vault root. Browser integration checks cover editor/view behavior and script/network isolation. External review results require a new review run.
+Version 0.8.6 validation performed on November 5, 2026. This patch removes mandatory clipboard backup files and confirmations during HTML paste and skips attachment work for text-only HTML. Browser integration checks cover native clipboard round trips, editor/view behavior and script/network isolation. External review results require a new review run.
 
 | Check                                                                   | Result                                                                                                                      |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -17,7 +17,7 @@ Tests use simulated adapters for the Vault, Editor, MarkdownRenderer, and Electr
 
 HTML-specific tests additionally cover byte-identical unedited saves; edited document round trips with styles, lists, table spans and image dimensions; original unsupported-source retention; malicious markup/URL/CSS rejection; inactive-document parsing; source size limits; safe body boundaries; portable image paths; atomic conflicts, concurrent writes and write failures; HTML creation collisions and vault-root folders; explorer/command creation with focused and selected names, Enter confirmation, cancellation and IME handling; default-folder and context-menu placement; explorer shortcut lifecycle and unload cleanup; image validation/deduplication; inaccessible and blocked remote images; rich clipboard flavors, image embedding and unchanged clipboard on failure; extension conflicts; and saved setting validation.
 
-The Chromium suite exercises actual contenteditable commands, formatting and inherited selection wrappers, native typing, undo/redo, image display resize/canonical references, CodeMirror source editing, script/network isolation, and the complete HTML view's autosave, mode switches, Preview, whole-note clipboard export, conflict copy and unsafe-source fallback. Screenshots are generated in `.test-build`. GitHub release CI uses its preinstalled Chrome and runs this suite before building and attesting assets.
+The Chromium suite exercises actual contenteditable commands, formatting and inherited selection wrappers, native typing, undo/redo, image display resize/canonical references, CodeMirror source editing, script/network isolation, and the complete HTML view's autosave, mode switches, Preview, whole-note clipboard export, conflict copy and unsafe-source fallback. Native clipboard checks cover typing, copying and pasting `aaaaaa`, browser-added formatting, and removal of active pasted content without extra notes or dialogs; text-only HTML paste skips attachment-index persistence. Screenshots are generated in `.test-build`. GitHub release CI uses its preinstalled Chrome and runs this suite before building and attesting assets.
 
 ## Implementation map
 

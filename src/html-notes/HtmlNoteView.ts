@@ -596,24 +596,6 @@ export class HtmlNoteView extends FileView {
     const generation = this.generation,
       before = this.model!.source,
       note = this.file!;
-    if (safe.issues.length) {
-      const answer = await choose(
-        this.app,
-        "Unsupported pasted HTML",
-        safe.issues.join(" ") +
-          " Save the complete original as a separate HTML note before inserting the safe version?",
-        [{ label: "Preserve original and paste safe content", value: "safe" }],
-      );
-      if (!answer) return;
-      await this.app.vault.create(
-        uniquePath(
-          this.app,
-          note.parent?.path || "",
-          `${note.basename}-clipboard-original.html`,
-        ),
-        html,
-      );
-    }
     const root = inertRoot();
     setSafeHtml(root, safe.html);
     if (safe.bodyStyle) {
@@ -622,7 +604,11 @@ export class HtmlNoteView extends FileView {
       wrapper.append(...root.childNodes);
       root.append(wrapper);
     }
-    const errors = await this.assets.import(root, note, files);
+    // Text-only pastes need no attachment import or asynchronous vault work.
+    const errors =
+      root.querySelector("img") || files.length
+        ? await this.assets.import(root, note, files)
+        : [];
     if (
       generation !== this.generation ||
       before !== this.model?.source ||
@@ -641,6 +627,11 @@ export class HtmlNoteView extends FileView {
       );
     }
     this.visual?.insert(root.innerHTML, insertion);
+    if (safe.issues.length)
+      new Notice(
+        "Unsupported formatting was removed from pasted content.",
+        8000,
+      );
     if (errors.length) new Notice(errors.join("\n"), 15000);
   }
   private async pasteFiles(files: File[]) {

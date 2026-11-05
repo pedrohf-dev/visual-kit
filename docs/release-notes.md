@@ -1,3 +1,9 @@
+## Visual Kit 0.8.6 — Paste into the current HTML note
+
+- Paste text and formatted HTML directly into the current note without creating a clipboard-original file or requiring a backup confirmation.
+- Sanitize pasted content and report removed formatting while preserving existing files' source-protection behavior.
+- Skip asynchronous attachment work for text-only HTML pastes. Add native Chromium clipboard regression checks for copying and pasting `aaaaaa`, browser-generated formatting and sanitized HTML.
+
 ## Visual Kit 0.8.5 — Quick HTML note creation
 
 - Add **Add HTML note** beside the file explorer's **New note** action.

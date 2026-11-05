@@ -245,8 +245,110 @@ try {
   assert.match(await page.locator(".cm-content").innerText(), /<script>/);
   assert.equal(await page.evaluate(() => window.vkViewTest.writes), 0);
   assert.deepEqual(network, []);
+
+  // Exercise the actual Chromium clipboard transport, including the extra
+  // computed styles added when an ordinary editable element is copied.
+  const clipboardContext = await browser.newContext({
+    permissions: ["clipboard-read", "clipboard-write"],
+  });
+  try {
+    const clipboardPage = await clipboardContext.newPage();
+    await clipboardPage.route("https://visual-kit.test/", (route) =>
+      route.fulfill({
+        contentType: "text/html",
+        body: '<main id="host"></main><div id="copy-source" contenteditable="true"></div>',
+      }),
+    );
+    await clipboardPage.goto("https://visual-kit.test/");
+    await clipboardPage.addScriptTag({ content: bundle.outputFiles[0].text });
+    await clipboardPage.evaluate(() => window.vkViewTest.mount("<p><br></p>"));
+    const editorBody = clipboardPage.frameLocator("iframe").locator("body");
+    await editorBody.click();
+    await clipboardPage.keyboard.type("aaaaaa");
+    await editorBody.press("Control+a");
+    await editorBody.press("Control+c");
+    await clipboardPage.waitForFunction(() =>
+      window.vkViewTest.clipboard.text.includes("aaaaaa"),
+    );
+    // The Electron mock records the application's rich copy; put that exact
+    // payload on the OS clipboard so Ctrl+V uses native clipboard wrappers.
+    await clipboardPage.evaluate(async () => {
+      const { html, text } = window.vkViewTest.clipboard;
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([text], { type: "text/plain" }),
+        }),
+      ]);
+    });
+    await editorBody.press("Control+End");
+    await editorBody.press("Control+v");
+    await clipboardPage.waitForFunction(() =>
+      window.vkViewTest.disk.includes("aaaaaaaaaaaa"),
+    );
+    assert.deepEqual(
+      await clipboardPage.evaluate(() => window.vkViewTest.backups),
+      [],
+    );
+    assert.equal(await clipboardPage.locator(".modal").count(), 0);
+    assert.equal(
+      await clipboardPage.evaluate(() => window.vkViewTest.persists),
+      0,
+    );
+
+    const nativeSource = clipboardPage.locator("#copy-source");
+    await nativeSource.fill("aaaaaa");
+    await nativeSource.press("Control+a");
+    await nativeSource.press("Control+c");
+    await clipboardPage.evaluate(() => window.vkViewTest.mount("<p><br></p>"));
+    await editorBody.click();
+    await editorBody.press("Control+v");
+    await clipboardPage.waitForFunction(() =>
+      window.vkViewTest.disk.includes("aaaaaa"),
+    );
+    assert.equal(await clipboardPage.locator(".modal").count(), 0);
+    assert.deepEqual(
+      await clipboardPage.evaluate(() => window.vkViewTest.backups),
+      [],
+    );
+    assert.equal(
+      await clipboardPage.evaluate(() => window.vkViewTest.persists),
+      0,
+    );
+
+    await clipboardPage.evaluate(() => {
+      const data = new DataTransfer();
+      data.setData(
+        "text/html",
+        "<p><b>Safe paste</b><script>window.evil=true</script></p>",
+      );
+      document
+        .querySelector("iframe")
+        .contentDocument.dispatchEvent(
+          new ClipboardEvent("paste", {
+            clipboardData: data,
+            cancelable: true,
+          }),
+        );
+    });
+    await clipboardPage.waitForFunction(() =>
+      window.vkViewTest.disk.includes("Safe paste"),
+    );
+    const pastedSource = await clipboardPage.evaluate(
+      () => window.vkViewTest.disk,
+    );
+    assert.match(pastedSource, /<b>Safe paste<\/b>/);
+    assert.doesNotMatch(pastedSource, /<script>|window.evil/);
+    assert.deepEqual(
+      await clipboardPage.evaluate(() => window.vkViewTest.backups),
+      [],
+    );
+    assert.equal(await clipboardPage.locator(".modal").count(), 0);
+  } finally {
+    await clipboardContext.close();
+  }
   console.log(
-    "PASS: Chromium frame editing, formatting, spans, selection copy, typing, undo/redo, image references/resizing, source editing, script/network isolation; file-view autosave, mode switching, preview, whole-note copy, conflict recovery, unsafe-source fallback.",
+    "PASS: Chromium frame editing, formatting, spans, selection copy, typing, undo/redo, image references/resizing, source editing, script/network isolation; file-view autosave, mode switching, preview, whole-note copy, conflict recovery, unsafe-source fallback; native clipboard text and sanitized HTML paste without extra files or dialogs.",
   );
 } finally {
   await browser.close();
