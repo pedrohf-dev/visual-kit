@@ -2,16 +2,22 @@ import { Notice, TFile, TFolder } from "obsidian";
 import type VisualKit from "../main";
 import { askText } from "../ui";
 import { ensureFolder, uniquePath } from "../paste/ImageFileWriter";
-import { imageFolder, safeName } from "../paste/ImageNamingService";
+import { safeName } from "../paste/ImageNamingService";
 import { HtmlNoteView, HTML_VIEW } from "./HtmlNoteView";
 import { newDocument } from "./HtmlDocument";
+import { registerHtmlNoteButton } from "./ExplorerButton";
 
 export async function createHtmlNote(
   plugin: VisualKit,
   folder: string,
   name: string,
 ) {
-  const normalized = imageFolder(folder, "", "");
+  // Obsidian represents the vault root TFolder.path as "/".
+  const normalized = folder === "/" ? "" : folder.replaceAll("\\", "/");
+  if (/^\/|^[A-Za-z]:|(?:^|\/)\.\.(?:\/|$)/.test(normalized))
+    throw new Error(
+      "HTML note folder must be relative to the vault (for example, HTML Notes).",
+    );
   const basename = safeName(name.replace(/\.html?$/i, "").trim() || "Untitled");
   await ensureFolder(plugin.app, normalized);
   // Vault.create also rejects collisions occurring after this check.
@@ -50,8 +56,9 @@ export function registerHtmlNotes(plugin: VisualKit) {
   const create = async (folder?: string) => {
     const name = await askText(
       plugin.app,
-      "Create HTML note — file name",
-      "Untitled.html",
+      "Create HTML note",
+      "Untitled",
+      "Create",
     );
     if (name === null) return;
     const file = await createHtmlNote(
@@ -69,6 +76,7 @@ export function registerHtmlNotes(plugin: VisualKit) {
     name: "Create HTML note",
     callback: () => run(() => create()),
   });
+  registerHtmlNoteButton(plugin, () => run(() => create()));
   for (const [id, name, whole] of [
     ["copy-as-rich-html", "Copy as rich HTML", false],
     ["copy-whole-html-note", "Copy whole HTML note", true],

@@ -41,6 +41,25 @@ Object.defineProperty(dom.HTMLElement.prototype, "setCssStyles", {
     Object.assign(this.style, styles);
   },
 });
+Object.assign(dom.HTMLElement.prototype, {
+  setText(this: HTMLElement, text: string) {
+    this.textContent = text;
+  },
+  empty(this: HTMLElement) {
+    this.replaceChildren();
+  },
+  createDiv(
+    this: HTMLElement,
+    options: { cls?: string; attr?: Record<string, string> } = {},
+  ) {
+    const el = this.ownerDocument.createElement("div");
+    el.className = options.cls || "";
+    for (const [name, value] of Object.entries(options.attr || {}))
+      el.setAttribute(name, value);
+    this.append(el);
+    return el;
+  },
+});
 const ticket = readFileSync("tests/fixtures/support-ticket.html", "utf8");
 const unsafe = readFileSync("tests/fixtures/unsupported-ticket.html", "utf8");
 
@@ -264,7 +283,185 @@ test("new HTML notes use real vault files and avoid overwrites and directory tra
   assert.equal(first.path, "tickets/Response.html");
   assert.equal(next.path, "tickets/Response-1.html");
   assert.equal(f.content.get(first.path), newDocument());
-  await assert.rejects(createHtmlNote(f.plugin as never, "../outside", "bad"));
+  for (const folder of ["/", ""])
+    assert.match(
+      (await createHtmlNote(f.plugin as never, folder, "Root.html")).path,
+      /^Root(?:-\d+)?\.html$/,
+    );
+  for (const folder of ["../outside", "/outside", "C:\\outside", "..\\outside"])
+    await assert.rejects(
+      createHtmlNote(f.plugin as never, folder, "bad"),
+      /HTML note folder must be relative to the vault/,
+    );
+});
+
+function creationFixture() {
+  const f = fixture(),
+    commands = new Map<string, () => void>(),
+    handlers = new Map<string, (...args: any[]) => void>(),
+    cleanups: (() => void)[] = [],
+    opened: string[] = [];
+  let leaves: { view: { containerEl: HTMLElement } }[] = [];
+  const explorer = document.createElement("div");
+  explorer.innerHTML =
+    '<div class="nav-buttons-container"><div class="nav-action-button" data-action="new-note"></div><div class="nav-action-button" data-action="new-folder"></div></div>';
+  document.body.append(explorer);
+  leaves = [{ view: { containerEl: explorer } }];
+  const plugin = Object.assign(f.plugin, {
+    registerView() {},
+    registerExtensions() {},
+    registerEvent() {},
+    register(cleanup: () => void) {
+      cleanups.push(cleanup);
+    },
+    addCommand(command: { id: string; callback?: () => void }) {
+      if (command.callback) commands.set(command.id, command.callback);
+    },
+  });
+  Object.assign(plugin.app, {
+    workspace: {
+      getActiveFile: () => ({ parent: { path: "/" } }),
+      getLeavesOfType: () => leaves,
+      onLayoutReady: (callback: () => void) => callback(),
+      on: (event: string, callback: (...args: any[]) => void) =>
+        handlers.set(event, callback),
+      getLeaf: () => ({
+        setViewState: async (state: { state: { file: string } }) => {
+          opened.push(state.state.file);
+        },
+      }),
+    },
+  });
+  registerHtmlNotes(plugin as never);
+  return {
+    ...f,
+    explorer,
+    commands,
+    handlers,
+    opened,
+    setLeaves: (next: typeof leaves) => (leaves = next),
+    unload: () => cleanups.forEach((cleanup) => cleanup()),
+  };
+}
+
+test("explorer shortcut and command create HTML notes with a focused name and Enter at the vault root", async () => {
+  const f = creationFixture();
+  Notice.messages.length = 0;
+  try {
+    const button = f.explorer.querySelector<HTMLElement>(".vk-add-html-note")!;
+    assert.equal(
+      button.previousElementSibling?.getAttribute("data-action"),
+      "new-note",
+    );
+    assert.equal(button.getAttribute("aria-label"), "Add HTML note");
+    for (const start of [
+      () => button.click(),
+      f.commands.get("create-html-note")!,
+    ]) {
+      start();
+      const input = document.querySelector<HTMLInputElement>(".modal input")!;
+      assert.equal(document.activeElement, input);
+      assert.equal(input.value, "Untitled");
+      assert.equal(input.selectionStart, 0);
+      assert.equal(input.selectionEnd, input.value.length);
+      input.value = "Quick response";
+      input.dispatchEvent(
+        new dom.KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      );
+      await new Promise((resolve) => setImmediate(resolve));
+      assert.equal(document.querySelector(".modal"), null);
+    }
+    assert.deepEqual(f.opened, [
+      "Quick response.html",
+      "Quick response-1.html",
+    ]);
+    assert.equal(f.content.get(f.opened[0]), newDocument());
+    assert.deepEqual(Notice.messages, []);
+  } finally {
+    f.unload();
+    document.body.replaceChildren();
+  }
+});
+
+test("HTML creation supports cancellation, IME entry, default folders and folder-menu overrides", async () => {
+  const f = creationFixture();
+  try {
+    const start = f.commands.get("create-html-note")!;
+    start();
+    document
+      .querySelector(".modal input")!
+      .dispatchEvent(
+        new dom.KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(f.opened, []);
+    f.plugin.settings.htmlFolder = "HTML Notes";
+    start();
+    const input = document.querySelector<HTMLInputElement>(".modal input")!;
+    input.value = "Named.htm";
+    input.dispatchEvent(
+      new dom.KeyboardEvent("keydown", { key: "Enter", isComposing: true }),
+    );
+    assert.ok(document.querySelector(".modal"));
+    document.querySelectorAll<HTMLButtonElement>(".modal button")[1].click();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(f.opened, ["HTML Notes/Named.html"]);
+    let createInFolder!: () => void;
+    f.handlers.get("file-menu")!(
+      {
+        addItem(callback: (item: any) => void) {
+          const item = {
+            setTitle() {
+              return item;
+            },
+            setIcon() {
+              return item;
+            },
+            onClick(callback: () => void) {
+              createInFolder = callback;
+              return item;
+            },
+          };
+          callback(item);
+        },
+      },
+      new TFolder("Selected"),
+    );
+    createInFolder();
+    document
+      .querySelector<HTMLInputElement>(".modal input")!
+      .dispatchEvent(new dom.KeyboardEvent("keydown", { key: "Enter" }));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(f.opened.at(-1), "Selected/Untitled.html");
+  } finally {
+    f.unload();
+    document.body.replaceChildren();
+  }
+});
+
+test("explorer shortcut follows layout changes without duplicates and is removed on unload", () => {
+  const f = creationFixture();
+  const sync = f.handlers.get("layout-change")!;
+  try {
+    sync();
+    sync();
+    assert.equal(f.explorer.querySelectorAll(".vk-add-html-note").length, 1);
+    f.explorer.querySelector(".vk-add-html-note")!.remove();
+    sync();
+    assert.equal(f.explorer.querySelectorAll(".vk-add-html-note").length, 1);
+    f.setLeaves([]);
+    sync();
+    assert.equal(f.explorer.querySelector(".vk-add-html-note"), null);
+    f.setLeaves([{ view: { containerEl: f.explorer } }]);
+    sync();
+    assert.ok(f.explorer.querySelector(".vk-add-html-note"));
+    f.unload();
+    sync();
+    assert.equal(f.explorer.querySelector(".vk-add-html-note"), null);
+  } finally {
+    f.unload();
+    document.body.replaceChildren();
+  }
 });
 test("portable vault paths resolve encoded filenames and reject external and escaping paths", () => {
   assert.equal(
@@ -390,8 +587,10 @@ test("HTML handler conflicts do not unregister other plugins and explicit openin
       commands.push(command);
     },
     registerEvent() {},
+    register() {},
     app: {
       workspace: {
+        onLayoutReady() {},
         on(_event: string, callback: unknown) {
           handlers.push(callback);
         },
@@ -405,7 +604,7 @@ test("HTML handler conflicts do not unregister other plugins and explicit openin
   assert.ok(
     Notice.messages.every((message) => message.includes("Another plugin")),
   );
-  assert.equal(handlers.length, 1);
+  assert.equal(handlers.length, 2);
   plugin.settings.htmlNotes = false;
   registerHtmlNotes(plugin as never);
   assert.equal(registered, 1);

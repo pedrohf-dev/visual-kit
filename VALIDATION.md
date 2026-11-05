@@ -1,12 +1,12 @@
 # Implementation validation
 
-Version 0.8.4 validation performed on November 5, 2026. This patch uses Obsidian DOM helpers for isolated document creation and serialized note formatting, and removes broad HTML-note lint exclusions. Browser integration checks cover script/network isolation. External review results require a new review run.
+Version 0.8.5 validation performed on November 5, 2026. This patch adds the file explorer HTML-note shortcut and keyboard confirmation, and fixes creation at the vault root. Browser integration checks cover editor/view behavior and script/network isolation. External review results require a new review run.
 
 | Check                                                                   | Result                                                                                                                      |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Official Obsidian ESLint rules (`npm run lint`)                         | Passed with zero errors and warnings                                                                                        |
 | TypeScript (`npm run check`)                                            | Passed                                                                                                                      |
-| Automated tests (`npm test`)                                            | 58 passed                                                                                                                   |
+| Automated tests (`npm test`)                                            | 61 passed                                                                                                                   |
 | Chromium editor/view integration (`npm run test:browser`, Windows Edge) | Passed; real editing engine with simulated host APIs                                                                        |
 | Production build (`npm run build`)                                      | Passed                                                                                                                      |
 | Dependency audit                                                        | 14 moderate advisories in the existing lint tooling dependency tree (minimatch); no production dependency advisory reported |
@@ -15,7 +15,7 @@ Automated coverage includes wiki and Markdown image syntax and dimensions; prese
 
 Tests use simulated adapters for the Vault, Editor, MarkdownRenderer, and Electron clipboard APIs. Rasterization tests use Fabric.js with a real canvas implementation in Node. They do not replace interface or clipboard testing inside Obsidian Desktop.
 
-HTML-specific tests additionally cover byte-identical unedited saves; edited document round trips with styles, lists, table spans and image dimensions; original unsupported-source retention; malicious markup/URL/CSS rejection; inactive-document parsing; source size limits; safe body boundaries; portable image paths; atomic conflicts, concurrent writes and write failures; HTML creation collisions; image validation/deduplication; inaccessible and blocked remote images; rich clipboard flavors, image embedding and unchanged clipboard on failure; extension conflicts; and saved setting validation.
+HTML-specific tests additionally cover byte-identical unedited saves; edited document round trips with styles, lists, table spans and image dimensions; original unsupported-source retention; malicious markup/URL/CSS rejection; inactive-document parsing; source size limits; safe body boundaries; portable image paths; atomic conflicts, concurrent writes and write failures; HTML creation collisions and vault-root folders; explorer/command creation with focused and selected names, Enter confirmation, cancellation and IME handling; default-folder and context-menu placement; explorer shortcut lifecycle and unload cleanup; image validation/deduplication; inaccessible and blocked remote images; rich clipboard flavors, image embedding and unchanged clipboard on failure; extension conflicts; and saved setting validation.
 
 The Chromium suite exercises actual contenteditable commands, formatting and inherited selection wrappers, native typing, undo/redo, image display resize/canonical references, CodeMirror source editing, script/network isolation, and the complete HTML view's autosave, mode switches, Preview, whole-note clipboard export, conflict copy and unsafe-source fallback. Screenshots are generated in `.test-build`. GitHub release CI uses its preinstalled Chrome and runs this suite before building and attesting assets.
 

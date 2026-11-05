@@ -1,3 +1,9 @@
+## Visual Kit 0.8.5 — Quick HTML note creation
+
+- Add **Add HTML note** beside the file explorer's **New note** action.
+- Focus and select the note name immediately; press **Enter** to create from the explorer, command palette or folder menu. The `.html` extension is added automatically.
+- Accept Obsidian's vault-root folder when creating HTML notes, fixing the misleading **Image folder must be relative to the vault** error.
+
 ## Visual Kit 0.8.4 — Obsidian review fixes
 
 - Use Obsidian DOM helpers to create empty elements, adopting them into the target inactive or sandbox document before adding content.

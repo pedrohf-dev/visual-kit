@@ -4,7 +4,7 @@ Visual Kit 0.8.1 adds local `.html` and `.htm` notes for exchanging formatted re
 
 ## Use
 
-1. Run **Visual Kit: Create HTML note**, or right-click a folder and choose **Create HTML note**. The selected folder takes priority over the default note folder. Existing filenames receive a numeric suffix; they are never overwritten.
+1. Click **Add HTML note** beside **New note** in the file explorer, run **Visual Kit: Create HTML note**, or right-click a folder and choose **Create HTML note**. Type a name and press **Enter** (or click **Create**); the name is selected and ready to replace, and `.html` is added automatically. Press **Escape** or **Cancel** to dismiss. The selected folder takes priority over the default note folder. Existing filenames receive a numeric suffix; they are never overwritten. Notes can also be created at the vault root.
 2. Paste into **Visual** mode. Use the toolbar or normal formatting shortcuts for bold, italic, underline, strikethrough, headings, paragraphs, fonts, colors, highlights, alignment, lists, links, separators and tables.
 3. Changes autosave after 800 ms. **Save** and Ctrl/Cmd+S flush changes. **Source** provides local CodeMirror syntax highlighting, indentation and undo/redo. **Preview** is read-only. Mode switches retain content but start a new visual/source undo history.
 4. Select content and use Ctrl/Cmd+C or **Copy as rich HTML**. The selection command asks for a selection if none exists. **Copy whole note** / **Visual Kit: Copy whole HTML note** explicitly exports everything. HTML fragments and plain text are provided; mixed images use embedded data URLs. Image-only copy also provides a native image representation.

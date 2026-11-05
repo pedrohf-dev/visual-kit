@@ -97,7 +97,8 @@ test("HTML paste does not execute markup or request unsupported image protocols"
   assert.equal(htmlImagePaste("<p>Plain text</p>", []), undefined);
 });
 
-test("image context menu suppresses the native menu, has icons and avoids ambiguous edits", async () => {
+test("image context menu suppresses the native menu, has icons and avoids ambiguous edits", async (t) => {
+  t.mock.method(ImageEditorView.prototype, "open", () => {});
   const plugin = new VisualKit({} as never, {} as never);
   const imageFile = new TFile("a.png");
   const note = new TFile("note.md");
@@ -120,6 +121,7 @@ test("image context menu suppresses the native menu, has icons and avoids ambigu
   Object.assign(plugin, {
     app: {
       workspace: {
+        onLayoutReady() {},
         on: (name: string, callback: (...args: any[]) => void) =>
           events.set(name, callback),
         iterateAllLeaves: (callback: (leaf: unknown) => void) =>

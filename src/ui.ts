@@ -31,29 +31,38 @@ export function askText(
   app: App,
   title: string,
   initial: string,
+  submitLabel = "Apply",
 ): Promise<string | null> {
   return new Promise((resolve) => {
     class Input extends Modal {
       result: string | null = null;
       onOpen() {
         this.titleEl.setText(title);
-        let value = initial;
-        new Setting(this.contentEl).addText((t) =>
-          t.setValue(value).onChange((v) => (value = v)),
-        );
+        let input!: HTMLInputElement;
+        const submit = () => {
+          this.result = input.value;
+          this.close();
+        };
+        new Setting(this.contentEl).addText((t) => {
+          t.setValue(initial);
+          input = t.inputEl;
+          input.setAttribute("aria-label", title);
+          input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" && !event.isComposing) {
+              event.preventDefault();
+              submit();
+            }
+          });
+        });
         new Setting(this.contentEl)
           .addButton((b) =>
             b.setButtonText("Cancel").onClick(() => this.close()),
           )
           .addButton((b) =>
-            b
-              .setButtonText("Apply")
-              .setCta()
-              .onClick(() => {
-                this.result = value;
-                this.close();
-              }),
+            b.setButtonText(submitLabel).setCta().onClick(submit),
           );
+        input.focus();
+        input.select();
       }
       onClose() {
         resolve(this.result);

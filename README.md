@@ -44,7 +44,7 @@ Requires **Obsidian Desktop 1.8.0 or later**.
 
 ### HTML notes and rich-text responses
 
-1. Run **Visual Kit: Create HTML note**, or right-click a folder and choose **Create HTML note**.
+1. Click **Add HTML note** beside **New note** in the file explorer, run **Visual Kit: Create HTML note**, or right-click a folder and choose **Create HTML note**. Type a name and press **Enter**; the `.html` extension is added automatically.
 2. Paste a formatted response into **Visual** mode. Use the toolbar for text styling, lists, tables, and images.
 3. Switch to **Source** to inspect HTML, or **Preview** for a read-only view. Changes autosave locally.
 4. Select content and run **Copy as rich HTML**, or choose **Copy whole note** to export everything.

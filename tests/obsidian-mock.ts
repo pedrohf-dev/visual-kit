@@ -25,11 +25,75 @@ export class Notice {
   hide() {}
 }
 export class Modal {
-  constructor(public app: unknown) {}
-  open() {}
-  close() {}
+  modalEl: HTMLElement;
+  titleEl: HTMLElement;
+  contentEl: HTMLElement;
+  constructor(public app: unknown) {
+    this.modalEl = document.createElement("div");
+    this.modalEl.className = "modal";
+    this.titleEl = document.createElement("h2");
+    this.contentEl = document.createElement("div");
+    this.modalEl.append(this.titleEl, this.contentEl);
+    this.modalEl.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") this.close();
+    });
+  }
+  onOpen() {}
+  onClose() {}
+  open() {
+    document.body.append(this.modalEl);
+    this.onOpen();
+  }
+  close() {
+    this.modalEl.remove();
+    this.onClose();
+  }
 }
-export class Setting {}
+export class Setting {
+  constructor(private container: HTMLElement) {}
+  addText(callback: (text: any) => void) {
+    const inputEl = document.createElement("input");
+    this.container.append(inputEl);
+    const text = {
+      inputEl,
+      setValue(value: string) {
+        inputEl.value = value;
+        return text;
+      },
+      onChange(change: (value: string) => void) {
+        inputEl.addEventListener("input", () => change(inputEl.value));
+        return text;
+      },
+    };
+    callback(text);
+    return this;
+  }
+  addButton(callback: (button: any) => void) {
+    const buttonEl = document.createElement("button");
+    this.container.append(buttonEl);
+    const button = {
+      setButtonText(text: string) {
+        buttonEl.textContent = text;
+        return button;
+      },
+      setCta() {
+        return button;
+      },
+      onClick(click: () => void) {
+        buttonEl.onclick = click;
+        return button;
+      },
+    };
+    callback(button);
+    return this;
+  }
+}
+export function setIcon(el: HTMLElement, icon: string) {
+  el.setAttribute("data-icon", icon);
+}
+export function setTooltip(el: HTMLElement, tooltip: string) {
+  el.setAttribute("aria-label", tooltip);
+}
 export const requests: string[] = [];
 export async function requestUrl(options: { url: string }) {
   requests.push(options.url);
@@ -70,6 +134,7 @@ export class Plugin {
     return { remove() {} };
   }
   addCommand() {}
+  register() {}
   registerEvent() {}
   registerView() {}
   registerExtensions() {}
