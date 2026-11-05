@@ -23,7 +23,8 @@ export function htmlElement<K extends keyof HTMLElementTagNameMap>(
   owner: Document = document,
 ): HTMLElementTagNameMap[K] {
   // The sandbox document has standard DOM prototypes, not Obsidian's createEl helpers.
-  return owner.createElement(tag);
+  // Create an empty host element, then adopt it before setting attributes or content.
+  return owner.adoptNode(createEl(tag));
 }
 /** An inactive owner document prevents even detached img elements from fetching resources. */
 export function inertRoot(owner: Document = document): HTMLDivElement {

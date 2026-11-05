@@ -25,7 +25,13 @@ export function installViewHarness() {
     this.append(el);
     return el;
   };
+  Object.assign(window, {
+    createEl: (tag: string) => document.createElement(tag),
+  });
   Object.assign(HTMLElement.prototype, {
+    setCssStyles(this: HTMLElement, styles: Partial<CSSStyleDeclaration>) {
+      Object.assign(this.style, styles);
+    },
     createEl: create,
     createDiv(this: HTMLElement, options: object = {}) {
       return create.call(this, "div", options);

@@ -1,6 +1,6 @@
 # Implementation validation
 
-Version 0.8.2 validation performed on November 5, 2026. This patch corrects the author to pedrof and refreshes the README and feature artwork. The HTML-note editor behavior is unchanged from 0.8.1; release CI reruns the existing checks.
+Version 0.8.3 validation performed on November 5, 2026. This patch uses Obsidian DOM helpers for isolated document creation and serialized note formatting, and removes broad HTML-note lint exclusions. Browser integration checks cover script/network isolation. External review results require a new review run.
 
 | Check                                                                   | Result                                                                                                                      |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |

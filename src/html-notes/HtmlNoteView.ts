@@ -393,7 +393,7 @@ export class HtmlNoteView extends FileView {
       if (action === "Add column")
         for (const item of Array.from(table.rows)) {
           const next = htmlElement("td", doc);
-          next.style.setProperty("border", "1px solid #bbb");
+          document.body.setCssStyles.call(next, { border: "1px solid #bbb" });
           next.append(htmlElement("br", doc));
           item.insertBefore(next, item.cells[cell.cellIndex + 1] || null);
         }
@@ -429,7 +429,7 @@ export class HtmlNoteView extends FileView {
         image.style.height = `${match[2]}px`;
       } else {
         image.removeAttribute("height");
-        image.style.setProperty("height", "auto");
+        document.body.setCssStyles.call(image, { height: "auto" });
       }
     });
   }
