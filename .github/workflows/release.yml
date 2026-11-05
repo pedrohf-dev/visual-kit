@@ -36,9 +36,11 @@ jobs:
       - run: npm run lint
       - run: npm run check
       - run: npm test
-      - name: Install browser test engine
-        run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
+      - name: Test Chromium editor and view
+        run: npm run test:browser
+        env:
+          # GitHub's Ubuntu runner already includes Chrome and its dependencies.
+          VISUAL_KIT_BROWSER_CHANNEL: chrome
       - run: npm run build
       - name: Attest installable assets
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4

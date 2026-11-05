@@ -1,4 +1,4 @@
-## Visual Kit 0.8.0 — HTML notes
+## Visual Kit 0.8.1 — HTML notes
 
 Create real `.html` notes in your vault and exchange formatted responses with ticket systems, email clients and other rich-text editors.
 
@@ -17,7 +17,7 @@ Requires Obsidian Desktop 1.8.0 or later. HTML handler conflicts keep the other 
 
 Table spans are retained; visual row/column restructuring of merged tables requires Source. Stylesheets, unsupported structures/CSS and active embeds stay in Source. SVG needs raster export. Mode switches reset that mode's undo history. Native HTML backlinks and graph indexing are not added.
 
-Movidesk and other destination editors control paste filtering and image retention. Authenticated Movidesk acceptance remains a documented manual step; pixel-perfect compatibility is not claimed. See the [HTML notes guide](https://github.com/pedrohf-dev/visual-kit/blob/0.8.0/docs/html-notes.md) for behavior, limits, architecture and the acceptance checklist.
+Movidesk and other destination editors control paste filtering and image retention. Authenticated Movidesk acceptance remains a documented manual step; pixel-perfect compatibility is not claimed. See the [HTML notes guide](https://github.com/pedrohf-dev/visual-kit/blob/0.8.1/docs/html-notes.md) for behavior, limits, architecture and the acceptance checklist.
 
 ### Install
 

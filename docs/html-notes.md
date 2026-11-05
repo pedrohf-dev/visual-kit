@@ -1,6 +1,6 @@
 # HTML notes
 
-Visual Kit 0.8.0 adds local `.html` and `.htm` notes for exchanging formatted responses with ticket systems, email clients and other rich-text editors. Requires Obsidian Desktop 1.8.0 or later. No accounts, cloud editor, API keys or CDN are used.
+Visual Kit 0.8.1 adds local `.html` and `.htm` notes for exchanging formatted responses with ticket systems, email clients and other rich-text editors. Requires Obsidian Desktop 1.8.0 or later. No accounts, cloud editor, API keys or CDN are used.
 
 ## Use
 

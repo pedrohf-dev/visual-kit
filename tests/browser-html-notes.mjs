@@ -178,6 +178,13 @@ try {
     window.vkViewTest.disk.includes("Appended in view."),
   );
   await page.getByRole("button", { name: "Source", exact: true }).click();
+  // CodeMirror virtualizes offscreen lines; scroll before asserting rendered text.
+  await page.locator(".cm-content").press("Control+End");
+  await page.waitForFunction(() =>
+    document
+      .querySelector(".cm-content")
+      ?.textContent.includes("Appended in view"),
+  );
   assert.match(
     await page.locator(".cm-content").innerText(),
     /Appended in view/,

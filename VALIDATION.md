@@ -1,6 +1,6 @@
 # Implementation validation
 
-Version 0.8.0 validation performed on November 5, 2026. HTML notes add source-preserving visual editing, safe rich clipboard interoperability, vault image handling and guarded persistence.
+Version 0.8.1 validation performed on November 5, 2026. HTML notes add source-preserving visual editing, safe rich clipboard interoperability, vault image handling and guarded persistence.
 
 | Check                                                                   | Result                                                                                                                      |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -17,7 +17,7 @@ Tests use simulated adapters for the Vault, Editor, MarkdownRenderer, and Electr
 
 HTML-specific tests additionally cover byte-identical unedited saves; edited document round trips with styles, lists, table spans and image dimensions; original unsupported-source retention; malicious markup/URL/CSS rejection; inactive-document parsing; source size limits; safe body boundaries; portable image paths; atomic conflicts, concurrent writes and write failures; HTML creation collisions; image validation/deduplication; inaccessible and blocked remote images; rich clipboard flavors, image embedding and unchanged clipboard on failure; extension conflicts; and saved setting validation.
 
-The Chromium suite exercises actual contenteditable commands, formatting and inherited selection wrappers, native typing, undo/redo, image display resize/canonical references, CodeMirror source editing, script/network isolation, and the complete HTML view's autosave, mode switches, Preview, whole-note clipboard export, conflict copy and unsafe-source fallback. Screenshots are generated in `.test-build`. GitHub release CI also installs Chromium and runs this suite before building and attesting assets.
+The Chromium suite exercises actual contenteditable commands, formatting and inherited selection wrappers, native typing, undo/redo, image display resize/canonical references, CodeMirror source editing, script/network isolation, and the complete HTML view's autosave, mode switches, Preview, whole-note clipboard export, conflict copy and unsafe-source fallback. Screenshots are generated in `.test-build`. GitHub release CI uses its preinstalled Chrome and runs this suite before building and attesting assets.
 
 ## Implementation map
 
@@ -30,6 +30,6 @@ The Chromium suite exercises actual contenteditable commands, formatting and inh
 | `src/html-notes/register.ts`, `src/main.ts`                        | Creation, explicit opening, palette commands, folder menus and non-destructive extension registration          |
 | Settings/storage/descriptions, styles                              | Feature configuration, validation and Obsidian controls                                                        |
 | Existing annotation editor and clipboard writer                    | HTML-specific annotation callback; optional native image flavor without changing Markdown copy                 |
-| Tests, build, release workflow, version metadata and documentation | Regression/Chromium validation, bundled licenses and installable 0.8.0 release                                 |
+| Tests, build, release workflow, version metadata and documentation | Regression/Chromium validation, bundled licenses and installable 0.8.1 release                                 |
 
 Live Obsidian Desktop validation (including minimum version and native OS clipboard behavior) and authenticated Movidesk acceptance remain manual. See the [HTML notes guide and checklist](docs/html-notes.md). Merged-table restructuring and unsupported stylesheets/active content require Source mode; visual/source switches reset editor undo history. Destination filtering and embedded-image retention are outside Visual Kit's control. Pixel-perfect compatibility is not claimed.
