@@ -1,6 +1,6 @@
 # Implementation validation
 
-Version 0.8.1 validation performed on November 5, 2026. HTML notes add source-preserving visual editing, safe rich clipboard interoperability, vault image handling and guarded persistence.
+Version 0.8.2 validation performed on November 5, 2026. This patch corrects the author to pedrof and refreshes the README and feature artwork. The HTML-note editor behavior is unchanged from 0.8.1; release CI reruns the existing checks.
 
 | Check                                                                   | Result                                                                                                                      |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |

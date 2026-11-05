@@ -69,3 +69,9 @@ await copyFile(
 await mkdir("dist/visual-kit/docs", { recursive: true });
 await copyFile("docs/spec-v2.2.md", "dist/visual-kit/docs/spec-v2.2.md");
 await copyFile("docs/html-notes.md", "dist/visual-kit/docs/html-notes.md");
+await mkdir("dist/visual-kit/docs/community-assets", { recursive: true });
+for (const extension of ["svg", "png"])
+  await copyFile(
+    `docs/community-assets/visual-kit-overview.${extension}`,
+    `dist/visual-kit/docs/community-assets/visual-kit-overview.${extension}`,
+  );

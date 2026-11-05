@@ -1,12 +1,14 @@
 {
   "name": "obsidian-visual-kit",
-  "version": "0.8.1",
+  "version": "0.8.2",
+  "author": "pedrof",
   "private": true,
   "scripts": {
     "build": "node esbuild.mjs",
     "check": "tsc --noEmit",
     "test": "node tests/run.mjs",
     "test:browser": "node tests/browser-html-notes.mjs",
+    "assets:readme": "node scripts/generate-readme-overview.cjs",
     "format": "prettier --write src tests *.json *.mjs styles.css README.md",
     "lint": "eslint src --max-warnings=0"
   },

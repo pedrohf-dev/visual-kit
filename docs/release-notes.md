@@ -1,4 +1,12 @@
-## Visual Kit 0.8.1 — HTML notes
+## Visual Kit 0.8.2 — Creator credit and refreshed overview
+
+- Correct the plugin creator to **pedrof**, with a link to the creator's GitHub profile. The plugin remains **Visual Kit** with the same plugin ID and settings.
+- Replace the README overview with a sharper seven-feature illustration covering screenshot tools and HTML notes. Include editable SVG artwork and a reproducible PNG generator.
+- Update the README introduction, author credit and quick starts for Markdown and HTML notes. Clarify selection copy versus explicit whole-note copy.
+
+Update Visual Kit and reload Obsidian to refresh the installed author metadata.
+
+### HTML notes, introduced in 0.8.1
 
 Create real `.html` notes in your vault and exchange formatted responses with ticket systems, email clients and other rich-text editors.
 

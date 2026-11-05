@@ -1,17 +1,19 @@
 # Visual Kit
 
-**Paste, annotate, and share screenshots without leaving Obsidian.**
+**Turn screenshots and rich text into clear, shareable notes.**
 
-A local image toolkit for bug reports, support tickets, and visual documentation.
+Capture evidence, annotate screenshots, edit HTML notes, and copy formatted responses between Obsidian and rich-text editors. Everything is processed locally in your vault.
+
+Created by **[pedrof](https://github.com/pedrohf-dev)**.
 
 [Download](https://github.com/pedrohf-dev/visual-kit/releases/latest) · [Support on Ko-fi](https://ko-fi.com/pedrohlf)
 
-![Visual Kit annotations: mark what matters](docs/community-assets/resume.png)
+![Visual Kit by pedrof: batch paste, rich paste, annotations, HTML notes, image sizing, deduplication, and rich copy](docs/community-assets/visual-kit-overview.png)
 
 ## Features
 
 - **Batch paste** — insert several images at once, in their original order.
-- **Rich paste** — paste HTML with text and images from email drafts and web pages, keeping their order. Accessible remote images are downloaded into your vault. Private Gmail images may require copying the image itself or saving and pasting the file; unavailable images leave a visible placeholder without losing your text.
+- **Rich paste** — keep text and images in order when pasting from email, web pages, and other rich-text editors. Public images can be imported into the vault; unavailable images show a warning and placeholder.
 - **Annotate** — add arrows, shapes, text, numbered markers, highlights, and redactions.
 - **Normalize** — give every image in a note or selection a consistent width.
 - **Deduplicate** — reuse identical images instead of saving extra copies.
@@ -30,13 +32,25 @@ Requires **Obsidian Desktop 1.8.0 or later**.
 
 ## Quick start
 
+### Screenshots and Markdown
+
 1. Paste screenshots into a note.
 2. Right-click an image and choose **Annotate**.
 3. Add your annotations and choose **Save as new**.
 4. Run **Visual Kit: Normalize image sizes** to set a consistent width.
 5. Select your documentation and run **Visual Kit: Copy with images**. Enable **Destination compatibility mode** for inline text and PNG images resized to their copied dimensions.
 
-You can also run **Copy with images** from the command palette. Without a selection, copy commands use the entire note. Formatting and image support depend on the destination editor.
+**Copy with images** uses your Markdown selection, or the whole note if nothing is selected. Formatting and image support depend on the destination editor.
+
+### HTML notes and rich-text responses
+
+1. Run **Visual Kit: Create HTML note**, or right-click a folder and choose **Create HTML note**.
+2. Paste a formatted response into **Visual** mode. Use the toolbar for text styling, lists, tables, and images.
+3. Switch to **Source** to inspect HTML, or **Preview** for a read-only view. Changes autosave locally.
+4. Select content and run **Copy as rich HTML**, or choose **Copy whole note** to export everything.
+5. Paste into your destination editor and verify the saved result.
+
+HTML notes are real `.html` files. Unsupported markup stays in Source mode to protect the original. See the [HTML notes guide](docs/html-notes.md) for image handling, recovery, compatibility, and known limits.
 
 ### Copying to Movidesk
 
@@ -76,6 +90,8 @@ npm run build
 ```
 
 The installable plugin is generated in `dist/visual-kit`.
+
+Regenerate the README overview with `npm run assets:readme`. Its editable SVG and exported PNG are stored in `docs/community-assets/`.
 
 ## Support
 
