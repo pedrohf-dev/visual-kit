@@ -193,7 +193,7 @@ try {
   await page.waitForFunction(() =>
     document
       .querySelector("iframe")
-      ?.contentDocument?.body.textContent.includes("Appended in view"),
+      ?.contentDocument?.body?.textContent?.includes("Appended in view"),
   );
   assert.equal(
     await page

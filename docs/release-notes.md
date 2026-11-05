@@ -1,8 +1,9 @@
-## Visual Kit 0.8.3 — Obsidian review fixes
+## Visual Kit 0.8.4 — Obsidian review fixes
 
 - Use Obsidian DOM helpers to create empty elements, adopting them into the target inactive or sandbox document before adding content.
 - Apply serialized table borders and proportional image sizing through the host setCssStyles helper, including elements from isolated documents.
 - Remove broad HTML-note lint exclusions so the standard DOM-helper and static-style rules run locally and in release CI.
+- Wait for the Preview iframe body before asserting its text in browser tests. Version 0.8.3 was not published because this test raced frame initialization in CI.
 - Retain creator credit and README artwork.
 
 Vault enumeration supports attachment deduplication; clipboard access supports paste and rich copy. These are expected capabilities. The existing execCommand adapter remains deprecated and covered by browser integration tests. External review results require a new review run.
