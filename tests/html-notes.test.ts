@@ -28,7 +28,14 @@ Object.assign(globalThis, {
   document: dom.document,
   window: dom,
   NodeFilter: dom.NodeFilter,
-  createEl: (tag: string) => dom.document.createElement(tag),
+  createEl: (tag: string, options: any = {}) => {
+    const el = dom.document.createElement(tag);
+    if (options.text) el.textContent = options.text;
+    if (options.value !== undefined) el.setAttribute("value", options.value);
+    for (const [key, value] of Object.entries(options.attr || {}))
+      el.setAttribute(key, String(value));
+    return el;
+  },
   createFragment: () => dom.document.createDocumentFragment(),
   createSpan: () => dom.document.createElement("span"),
   createImageBitmap: async (blob: Blob) =>
@@ -463,6 +470,49 @@ test("explorer shortcut follows layout changes without duplicates and is removed
     document.body.replaceChildren();
   }
 });
+test("templates create independent notes and retain portable image references", async () => {
+  const f = creationFixture();
+  try {
+    await f.plugin.app.vault.create(
+      "HTML Templates/Letter.html",
+      '<p>Dear customer</p><img src="../attachments/logo.png">',
+    );
+    f.commands.get("create-html-note")!();
+    const select = document.querySelector<HTMLSelectElement>(
+      'select[aria-label="Template"]',
+    )!;
+    assert.equal(select.options.length, 2);
+    select.value = "HTML Templates/Letter.html";
+    select.dispatchEvent(new dom.Event("change"));
+    document
+      .querySelector<HTMLInputElement>(".modal input")!
+      .dispatchEvent(new dom.KeyboardEvent("keydown", { key: "Enter" }));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.match(f.content.get("Untitled.html")!, /Dear customer/);
+    assert.match(
+      f.content.get("Untitled.html")!,
+      /src="attachments\/logo.png"/,
+    );
+    assert.match(
+      f.content.get("HTML Templates/Letter.html")!,
+      /src="\.\.\/attachments/,
+    );
+  } finally {
+    f.unload();
+    document.body.replaceChildren();
+  }
+});
+
+test("semantic HTML and flex/grid formatting survive visual editing", () => {
+  const source =
+    '<section style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><figure style="border-radius:8px;box-shadow:0 2px 4px gray"><figcaption><mark>Caption</mark></figcaption></figure><details open><summary>Details</summary><dl><dt>Key</dt><dd>Value</dd></dl></details></section>';
+  const model = new HtmlDocument(source);
+  assert.deepEqual(model.safe.issues, []);
+  model.editBody(model.safe.html);
+  assert.match(model.source, /grid-template-columns/);
+  assert.match(model.source, /<details open/);
+});
+
 test("portable vault paths resolve encoded filenames and reject external and escaping paths", () => {
   assert.equal(
     vaultPath("../attachments/screen%20one.png", "tickets/note.html"),
@@ -600,7 +650,7 @@ test("HTML handler conflicts do not unregister other plugins and explicit openin
   Notice.messages.length = 0;
   registerHtmlNotes(plugin as never);
   assert.equal(registered, 1);
-  assert.equal(commands.length, 3);
+  assert.equal(commands.length, 4);
   assert.ok(
     Notice.messages.every((message) => message.includes("Another plugin")),
   );

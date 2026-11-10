@@ -246,6 +246,27 @@ try {
   assert.equal(await page.evaluate(() => window.vkViewTest.writes), 0);
   assert.deepEqual(network, []);
 
+  await page.evaluate(() =>
+    window.vkViewTest.mount(
+      '<!doctype html><html><head><style>.cards{display:grid;grid-template-columns:1fr 1fr}h1{color:rgb(12, 34, 56)}</style></head><body><main class="cards"><h1>Styled preview</h1><p>Second column</p></main><script>window.evil=true</script></body></html>',
+    ),
+  );
+  await page.getByRole("button", { name: "Preview", exact: true }).click();
+  const fullFrame = page.frameLocator('iframe[title="Full HTML preview"]');
+  await fullFrame.locator("h1").waitFor();
+  assert.equal(
+    await fullFrame.locator("h1").evaluate((el) => getComputedStyle(el).color),
+    "rgb(12, 34, 56)",
+  );
+  assert.equal(
+    await fullFrame
+      .locator("main")
+      .evaluate((el) => getComputedStyle(el).display),
+    "grid",
+  );
+  assert.equal(await fullFrame.locator("script").count(), 0);
+  assert.deepEqual(network, []);
+
   // Exercise the actual Chromium clipboard transport, including the extra
   // computed styles added when an ordinary editable element is copied.
   const clipboardContext = await browser.newContext({
@@ -322,14 +343,12 @@ try {
         "text/html",
         "<p><b>Safe paste</b><script>window.evil=true</script></p>",
       );
-      document
-        .querySelector("iframe")
-        .contentDocument.dispatchEvent(
-          new ClipboardEvent("paste", {
-            clipboardData: data,
-            cancelable: true,
-          }),
-        );
+      document.querySelector("iframe").contentDocument.dispatchEvent(
+        new ClipboardEvent("paste", {
+          clipboardData: data,
+          cancelable: true,
+        }),
+      );
     });
     await clipboardPage.waitForFunction(() =>
       window.vkViewTest.disk.includes("Safe paste"),

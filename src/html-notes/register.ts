@@ -4,13 +4,16 @@ import { askText } from "../ui";
 import { ensureFolder, uniquePath } from "../paste/ImageFileWriter";
 import { safeName } from "../paste/ImageNamingService";
 import { HtmlNoteView, HTML_VIEW } from "./HtmlNoteView";
-import { newDocument } from "./HtmlDocument";
+import { newDocument, parseHtml, replaceBody } from "./HtmlDocument";
+import { vaultPath, relativeImage } from "./Assets";
 import { registerHtmlNoteButton } from "./ExplorerButton";
 
 export async function createHtmlNote(
   plugin: VisualKit,
   folder: string,
   name: string,
+  source = newDocument(),
+  sourcePath?: string,
 ) {
   // Obsidian represents the vault root TFolder.path as "/".
   const normalized = folder === "/" ? "" : folder.replaceAll("\\", "/");
@@ -20,11 +23,21 @@ export async function createHtmlNote(
     );
   const basename = safeName(name.replace(/\.html?$/i, "").trim() || "Untitled");
   await ensureFolder(plugin.app, normalized);
+  const path = uniquePath(plugin.app, normalized, `${basename}.html`);
+  if (sourcePath) {
+    const doc = parseHtml(source);
+    let changed = false;
+    for (const image of doc.querySelectorAll("img[src]")) {
+      const target = vaultPath(image.getAttribute("src")!, sourcePath);
+      if (target) {
+        image.setAttribute("src", relativeImage(target, path));
+        changed = true;
+      }
+    }
+    if (changed) source = replaceBody(source, doc.body.innerHTML);
+  }
   // Vault.create also rejects collisions occurring after this check.
-  return plugin.app.vault.create(
-    uniquePath(plugin.app, normalized, `${basename}.html`),
-    newDocument(),
-  );
+  return plugin.app.vault.create(path, source);
 }
 
 export function registerHtmlNotes(plugin: VisualKit) {
@@ -54,11 +67,43 @@ export function registerHtmlNotes(plugin: VisualKit) {
     });
   };
   const create = async (folder?: string) => {
+    const templates = plugin.app.vault
+      .getFiles()
+      .filter(
+        (file) =>
+          file.path.startsWith("HTML Templates/") &&
+          /\.html?$/i.test(file.path),
+      )
+      .sort((a, b) => a.path.localeCompare(b.path));
+    let template = "";
     const name = await askText(
       plugin.app,
       "Create HTML note",
       "Untitled",
       "Create",
+      (container) => {
+        container.classList.add("vk-create-note");
+        const label = createEl("label", {
+          text: "Template",
+          cls: "vk-template-label",
+        });
+        const select = createEl("select", {
+          attr: { "aria-label": "Template" },
+        });
+        select.append(createEl("option", { text: "Blank note", value: "" }));
+        for (const file of templates)
+          select.append(
+            createEl("option", {
+              text: file.path.slice("HTML Templates/".length),
+              value: file.path,
+            }),
+          );
+        select.onchange = () => {
+          template = select.value;
+        };
+        label.append(select);
+        container.append(label);
+      },
     );
     if (name === null) return;
     const file = await createHtmlNote(
@@ -68,6 +113,12 @@ export function registerHtmlNotes(plugin: VisualKit) {
           plugin.app.workspace.getActiveFile()?.parent?.path ||
           ""),
       name,
+      template
+        ? await plugin.app.vault.read(
+            templates.find((file) => file.path === template)!,
+          )
+        : newDocument(),
+      template || undefined,
     );
     await open(file);
   };
@@ -77,6 +128,35 @@ export function registerHtmlNotes(plugin: VisualKit) {
     callback: () => run(() => create()),
   });
   registerHtmlNoteButton(plugin, () => run(() => create()));
+  plugin.addCommand({
+    id: "save-html-template",
+    name: "Save current HTML note as template",
+    checkCallback: (checking) => {
+      const file = plugin.app.workspace.getActiveFile();
+      if (!file || !/\.html?$/i.test(file.path)) return false;
+      if (!checking)
+        run(async () => {
+          const name = await askText(
+            plugin.app,
+            "Save HTML template",
+            file.basename,
+            "Save template",
+          );
+          if (name === null) return;
+          const view = plugin.app.workspace.getActiveViewOfType(HtmlNoteView);
+          if (view) await view.save();
+          await createHtmlNote(
+            plugin,
+            "HTML Templates",
+            name,
+            await plugin.app.vault.read(file),
+            file.path,
+          );
+          new Notice("Template saved. Choose it when creating an HTML note.");
+        });
+      return true;
+    },
+  });
   for (const [id, name, whole] of [
     ["copy-as-rich-html", "Copy as rich HTML", false],
     ["copy-whole-html-note", "Copy whole HTML note", true],

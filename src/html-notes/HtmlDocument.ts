@@ -1,15 +1,15 @@
 import createDOMPurify from "dompurify";
 
 const tags =
-  "p div span br b strong i em u s strike del h1 h2 h3 h4 h5 h6 ul ol li a hr table caption colgroup col thead tbody tfoot tr td th img blockquote pre code sub sup font".split(
+  "p div span br b strong i em u s strike del h1 h2 h3 h4 h5 h6 ul ol li a hr table caption colgroup col thead tbody tfoot tr td th img blockquote pre code sub sup font section article header footer main aside nav figure figcaption details summary mark small abbr cite q time address dl dt dd kbd samp var wbr ins ruby rt rp bdi bdo".split(
     " ",
   );
 const attributes =
-  "style href src alt title width height colspan rowspan align valign border cellpadding cellspacing start reversed type color face size dir lang".split(
+  "style href src alt title width height colspan rowspan align valign border cellpadding cellspacing start reversed type color face size dir lang open datetime cite scope headers".split(
     " ",
   );
 const styles = new Set(
-  "color background-color font-family font-size font-weight font-style text-decoration text-decoration-line text-align vertical-align line-height letter-spacing white-space word-break overflow-wrap margin margin-top margin-right margin-bottom margin-left padding padding-top padding-right padding-bottom padding-left border border-top border-right border-bottom border-left border-width border-style border-color border-collapse border-spacing width height min-width max-width min-height max-height list-style-type display".split(
+  "color background-color font-family font-size font-weight font-style text-decoration text-decoration-line text-align vertical-align line-height letter-spacing white-space word-break overflow-wrap margin margin-top margin-right margin-bottom margin-left padding padding-top padding-right padding-bottom padding-left border border-top border-right border-bottom border-left border-width border-style border-color border-collapse border-spacing width height min-width max-width min-height max-height list-style-type display flex flex-direction flex-wrap flex-flow flex-grow flex-shrink flex-basis align-items align-content align-self justify-content justify-items justify-self gap row-gap column-gap grid grid-template-columns grid-template-rows grid-auto-flow grid-auto-columns grid-auto-rows grid-column grid-row order border-radius box-shadow opacity text-shadow text-indent text-transform word-spacing font-variant font-variant-ligatures font-variant-caps text-decoration-thickness text-decoration-style text-decoration-color text-underline-offset overflow overflow-x overflow-y box-sizing object-fit object-position aspect-ratio columns column-count column-width column-rule break-inside widows orphans -webkit-text-stroke-width float clear".split(
     " ",
   ),
 );
@@ -199,7 +199,7 @@ export function sanitizeHtml(
         !styles.has(property) ||
         /url\s*\(|expression\s*\(|@|\\|var\s*\(|[<>]/i.test(value) ||
         (property === "display" &&
-          !/^(block|inline|inline-block|table|table-row|table-cell|list-item)$/.test(
+          !/^(block|inline|inline-block|table|table-row|table-cell|list-item|flex|inline-flex|grid|inline-grid|flow-root|contents|none)$/.test(
             value,
           ))
       ) {

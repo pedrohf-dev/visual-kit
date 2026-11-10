@@ -1,3 +1,10 @@
+## Visual Kit 0.9.0 — HTML templates and richer formatting
+
+- Add unlimited vault-based HTML templates and a template dropdown to note creation. Save the active HTML note as a template through the command palette.
+- Preserve relative image references when saving templates and creating notes from them.
+- Expand visual formatting with semantic HTML, flex/grid, shadows, rounded corners and typography controls. Render embedded stylesheets in an isolated full-document Preview.
+- Refresh toolbar spacing, controls and active-mode indicators; add subscript, superscript, clear formatting and heading levels 5–6.
+
 ## Visual Kit 0.8.6 — Paste into the current HTML note
 
 - Paste text and formatted HTML directly into the current note without creating a clipboard-original file or requiring a backup confirmation.

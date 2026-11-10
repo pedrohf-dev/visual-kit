@@ -19,6 +19,7 @@ import { HtmlAssets, relativeImage, vaultPath } from "./Assets";
 import { copyHtml } from "./Clipboard";
 import { VisualEditor } from "./VisualEditor";
 import { sourceEditor } from "./SourceEditor";
+import { fullPreview } from "./FullPreview";
 
 export const HTML_VIEW = "visual-kit-html-note";
 export type HtmlMode = "visual" | "source" | "preview";
@@ -191,6 +192,11 @@ export class HtmlNoteView extends FileView {
     this.surface.empty();
     this.actions.empty();
     this.mode = mode;
+    for (const button of this.toolbar.querySelectorAll("button")) {
+      const label = button.getAttribute("aria-label")?.toLowerCase();
+      if (label && ["visual", "source", "preview"].includes(label))
+        button.setAttribute("aria-pressed", String(label === mode));
+    }
     this.generation++;
     if (mode === "source") {
       this.source = sourceEditor(
@@ -199,6 +205,12 @@ export class HtmlNoteView extends FileView {
         (value) => this.updateSource(value),
         () => this.run(() => this.save()),
       );
+    } else if (mode === "preview" && this.model.safe.issues.length) {
+      fullPreview(this.surface, this.model.source, (source) => {
+        const file = this.file && this.assets.resolve(source, this.file);
+        return file ? this.app.vault.getResourcePath(file) : undefined;
+      });
+      this.message("Full document preview. Edit complex layouts and stylesheets in Source mode.");
     } else {
       this.visual = new VisualEditor(
         this.surface,
@@ -240,6 +252,9 @@ export class HtmlNoteView extends FileView {
       ["Italic", "italic"],
       ["Underline", "underline"],
       ["Strikethrough", "strikeThrough"],
+      ["Subscript", "subscript"],
+      ["Superscript", "superscript"],
+      ["Clear formatting", "removeFormat"],
       ["Bullets", "insertUnorderedList"],
       ["Numbered list", "insertOrderedList"],
       ["Left", "justifyLeft"],
@@ -258,6 +273,8 @@ export class HtmlNoteView extends FileView {
         h2: "Heading 2",
         h3: "Heading 3",
         h4: "Heading 4",
+        h5: "Heading 5",
+        h6: "Heading 6",
         blockquote: "Quote",
         pre: "Preformatted",
       },

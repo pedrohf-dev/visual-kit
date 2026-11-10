@@ -32,6 +32,7 @@ export function askText(
   title: string,
   initial: string,
   submitLabel = "Apply",
+  decorate?: (container: HTMLElement) => void,
 ): Promise<string | null> {
   return new Promise((resolve) => {
     class Input extends Modal {
@@ -54,6 +55,7 @@ export function askText(
             }
           });
         });
+        decorate?.(this.contentEl);
         new Setting(this.contentEl)
           .addButton((b) =>
             b.setButtonText("Cancel").onClick(() => this.close()),

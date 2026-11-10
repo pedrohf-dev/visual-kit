@@ -14,6 +14,14 @@ Visual Kit 0.8.1 adds local `.html` and `.htm` notes for exchanging formatted re
 
 HTML copy preserves note typography by default. Its separate destination compatibility setting opts into the existing font overrides, block flattening and PNG rasterization without changing the saved file or the Markdown clipboard settings.
 
+## Templates and extended formatting
+
+Run **Visual Kit: Save current HTML note as template** to save a reusable copy. Templates live in **HTML Templates** in the vault; edit, rename or delete them using the file explorer, or add your own `.html`/`.htm` files there. There is no template count limit. The creation dialog lists all templates, including subfolders, alongside **Blank note**. New notes are independent copies, and relative image references are adjusted for their destination.
+
+Visual mode supports semantic sections, figures, details/summary, definition lists, highlights, flex and grid layouts, rounded borders, shadows and extended typography. The toolbar adds subscript, superscript, clear formatting and all six heading levels. The active mode is highlighted.
+
+Documents with embedded stylesheets or formatting beyond the visual editor can be edited in **Source** and rendered in **Preview**, which preserves document CSS in an isolated frame. This is broader formatting support, not execution of arbitrary web applications: scripts, interactive forms, external stylesheets and remote resource loading remain disabled. Full-document previews do not provide the visual editor's selection-copy integration.
+
 ## Images and tables
 
 Pasted image files, supported base64 data images and public HTTP/HTTPS images reuse attachment folders, naming, byte validation and duplicate preferences. SVG requires explicit PNG export. Saved references are portable relative paths with encoded filenames. Obsidian resource URLs are used only for display.

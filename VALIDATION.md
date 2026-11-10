@@ -1,12 +1,12 @@
 # Implementation validation
 
-Version 0.8.6 validation performed on November 5, 2026. This patch removes mandatory clipboard backup files and confirmations during HTML paste and skips attachment work for text-only HTML. Browser integration checks cover native clipboard round trips, editor/view behavior and script/network isolation. External review results require a new review run.
+Version 0.9.0 validation performed on November 9, 2026. This release adds vault-based templates, extended visual formatting, an isolated stylesheet preview and refreshed editor controls. Tests cover template copies, relative images, semantic HTML and flex/grid formatting, native clipboard behavior and script/network isolation.
 
 | Check                                                                   | Result                                                                                                                      |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Official Obsidian ESLint rules (`npm run lint`)                         | Passed with zero errors and warnings                                                                                        |
 | TypeScript (`npm run check`)                                            | Passed                                                                                                                      |
-| Automated tests (`npm test`)                                            | 61 passed                                                                                                                   |
+| Automated tests (`npm test`)                                            | 63 passed                                                                                                                   |
 | Chromium editor/view integration (`npm run test:browser`, Windows Edge) | Passed; real editing engine with simulated host APIs                                                                        |
 | Production build (`npm run build`)                                      | Passed                                                                                                                      |
 | Dependency audit                                                        | 14 moderate advisories in the existing lint tooling dependency tree (minimatch); no production dependency advisory reported |
