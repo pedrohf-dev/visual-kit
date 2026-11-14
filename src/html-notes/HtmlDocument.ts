@@ -151,9 +151,34 @@ function bodyBounds(source: string): { start: number; end: number } | null {
 export function sanitizeHtml(
   source: string,
   owner: Document = document,
+  clipboard = false,
 ): SafeHtml {
   const parsed = parseHtml(source, owner);
   const issues = new Set<string>();
+  if (clipboard)
+    for (const table of parsed.body.querySelectorAll("table")) {
+      if (table.classList.contains("fr-dashed-borders")) {
+        for (const cell of table.querySelectorAll<HTMLTableCellElement>(
+          "td,th",
+        ))
+          if (!cell.style.border)
+            owner.body.setCssStyles.call(cell, { border: "1px dashed #999" });
+      }
+      if (table.classList.contains("fr-alternate-rows")) {
+        for (const [index, row] of Array.from(table.rows).entries())
+          if (index % 2 && !row.style.backgroundColor)
+            owner.body.setCssStyles.call(row, { backgroundColor: "#f5f5f5" });
+      }
+      if (!table.style.borderCollapse)
+        owner.body.setCssStyles.call(table, { borderCollapse: "collapse" });
+      for (const el of [table, ...table.querySelectorAll("*")]) {
+        const classes = [...el.classList].filter(
+          (name) => !name.startsWith("fr-"),
+        );
+        if (classes.length) el.setAttribute("class", classes.join(" "));
+        else el.removeAttribute("class");
+      }
+    }
   if (/<(?:html|head|body)\b/i.test(source)) {
     const bounds = bodyBounds(source);
     if (!bounds)

@@ -1,4 +1,4 @@
-import { FileView, Notice, TFile, type WorkspaceLeaf } from "obsidian";
+import { setIcon, FileView, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import type { EditorView } from "@codemirror/view";
 import type VisualKit from "../main";
 import { askText, choose } from "../ui";
@@ -42,6 +42,7 @@ export class HtmlNoteView extends FileView {
   constructor(
     leaf: WorkspaceLeaf,
     private plugin: VisualKit,
+    private saveTemplate?: (file: TFile) => Promise<void>,
   ) {
     super(leaf);
     this.assets = new HtmlAssets(plugin);
@@ -119,12 +120,21 @@ export class HtmlNoteView extends FileView {
       this.button(this.toolbar, mode[0].toUpperCase() + mode.slice(1), () =>
         this.setMode(mode),
       );
-    this.button(this.toolbar, "Save", () => this.save());
-    this.button(this.toolbar, "Copy as rich HTML", () => this.copy(false));
-    this.button(this.toolbar, "Copy whole note", () => this.copy(true));
-    this.button(this.toolbar, "Import linked images", () =>
-      this.importLinked(),
+    this.button(this.toolbar, "Save", () => this.save(), "save");
+    this.button(
+      this.toolbar,
+      "Copy as rich HTML",
+      () => this.copy(false),
+      "copy",
     );
+    this.button(this.toolbar, "Copy whole note", () => this.copy(true));
+    if (this.saveTemplate)
+      this.button(
+        this.toolbar,
+        "Save as HTML template",
+        () => this.file && this.saveTemplate?.(this.file),
+        "file-plus",
+      );
     this.status = this.contentEl.createDiv({
       cls: "vk-html-status",
       attr: { role: "status", "aria-live": "polite" },
@@ -133,7 +143,7 @@ export class HtmlNoteView extends FileView {
     this.surface = this.contentEl.createDiv({ cls: "vk-html-surface" });
     this.setMode(this.plugin.settings.htmlDefaultMode);
   }
-  private run(action: () => unknown) {
+  private run(action: () => unknown, icon?: string) {
     void Promise.resolve()
       .then(action)
       .catch((error) => {
@@ -144,11 +154,17 @@ export class HtmlNoteView extends FileView {
   private message(text: string) {
     if (this.status) this.status.textContent = text;
   }
-  private button(parent: HTMLElement, label: string, action: () => unknown) {
+  private button(
+    parent: HTMLElement,
+    label: string,
+    action: () => unknown,
+    icon?: string,
+  ) {
     const button = parent.createEl("button", {
-      text: label,
+      text: icon ? undefined : label,
       attr: { title: label, "aria-label": label },
     });
+    if (icon) setIcon(button, icon);
     button.onmousedown = (event) => {
       if (event.button === 0) {
         this.visual?.capture();
@@ -210,7 +226,9 @@ export class HtmlNoteView extends FileView {
         const file = this.file && this.assets.resolve(source, this.file);
         return file ? this.app.vault.getResourcePath(file) : undefined;
       });
-      this.message("Full document preview. Edit complex layouts and stylesheets in Source mode.");
+      this.message(
+        "Full document preview. Edit complex layouts and stylesheets in Source mode.",
+      );
     } else {
       this.visual = new VisualEditor(
         this.surface,
@@ -247,6 +265,16 @@ export class HtmlNoteView extends FileView {
   }
   private formatting() {
     const bar = this.actions;
+    const more = this.overflow(bar, "More formatting");
+    const tables = this.overflow(bar, "Table");
+    const images = this.overflow(bar, "Image");
+    const icons: Record<string, string> = {
+      bold: "bold",
+      italic: "italic",
+      underline: "underline",
+      insertUnorderedList: "list",
+      insertOrderedList: "list-ordered",
+    };
     for (const [label, command] of [
       ["Bold", "bold"],
       ["Italic", "italic"],
@@ -263,7 +291,12 @@ export class HtmlNoteView extends FileView {
       ["Justify", "justifyFull"],
       ["Separator", "insertHorizontalRule"],
     ])
-      this.button(bar, label, () => this.visual?.command(command));
+      this.button(
+        icons[command] ? bar : more,
+        label,
+        () => this.visual?.command(command),
+        icons[command],
+      );
     this.select(
       bar,
       "Block",
@@ -281,7 +314,7 @@ export class HtmlNoteView extends FileView {
       (value) => this.visual?.command("formatBlock", value),
     );
     this.select(
-      bar,
+      more,
       "Font",
       {
         Arial: "Arial",
@@ -293,7 +326,7 @@ export class HtmlNoteView extends FileView {
       (value) => this.visual?.command("fontName", value),
     );
     this.select(
-      bar,
+      more,
       "Size",
       {
         "2": "10 pt",
@@ -309,7 +342,7 @@ export class HtmlNoteView extends FileView {
       ["Text color", "foreColor"],
       ["Highlight", "hiliteColor"],
     ]) {
-      const wrapper = bar.createEl("label", { text: label });
+      const wrapper = more.createEl("label", { text: label });
       const input = wrapper.createEl("input", {
         type: "color",
         attr: { "aria-label": label },
@@ -326,10 +359,10 @@ export class HtmlNoteView extends FileView {
       if (value && /^(https?:|mailto:|#)/i.test(value))
         this.visual?.command("createLink", value);
     });
-    this.button(bar, "Remove link", () => this.visual?.command("unlink"));
-    this.button(bar, "Undo", () => this.visual?.undo());
-    this.button(bar, "Redo", () => this.visual?.undo(true));
-    this.button(bar, "Insert table", async () => {
+    this.button(more, "Remove link", () => this.visual?.command("unlink"));
+    this.button(bar, "Undo", () => this.visual?.undo(), "undo-2");
+    this.button(bar, "Redo", () => this.visual?.undo(true), "redo-2");
+    this.button(tables, "Insert table", async () => {
       const input = await askText(
         this.app,
         "Table size: rows x columns (1–30 each)",
@@ -357,8 +390,8 @@ export class HtmlNoteView extends FileView {
       "Cell color",
       "Cell border",
     ])
-      this.button(bar, action, () => this.table(action));
-    this.button(bar, "Insert image", () => {
+      this.button(tables, action, () => this.table(action));
+    this.button(images, "Insert image", () => {
       const input = htmlElement("input", this.contentEl.ownerDocument);
       input.type = "file";
       input.accept = "image/*";
@@ -367,13 +400,25 @@ export class HtmlNoteView extends FileView {
         this.run(() => this.pasteFiles(Array.from(input.files || [])));
       input.click();
     });
-    this.button(bar, "Resize image", () => this.resizeImage());
-    this.button(bar, "Remove image", () => {
+    this.button(images, "Resize image", () => this.resizeImage());
+    this.button(images, "Remove image", () => {
       const image = this.visual?.selectedImage();
       if (!image) throw new Error("Select an image first.");
       this.visual?.mutate(() => image.remove());
     });
-    this.button(bar, "Annotate image", () => this.annotate());
+    this.button(images, "Import linked images", () => this.importLinked());
+    this.button(images, "Annotate image", () => this.annotate());
+  }
+  private overflow(parent: HTMLElement, label: string) {
+    const details = parent.createEl("details", { cls: "vk-html-overflow" });
+    const summary = details.createEl("summary", { text: label });
+    summary.onmousedown = () => this.visual?.capture();
+    details.ontoggle = () => {
+      if (details.open)
+        for (const other of parent.querySelectorAll("details[open]"))
+          if (other !== details) other.removeAttribute("open");
+    };
+    return details.createDiv({ cls: "vk-html-overflow-panel" });
   }
   private async table(action: string) {
     const cell = this.visual?.selectedCell();
@@ -608,7 +653,7 @@ export class HtmlNoteView extends FileView {
       }
       return;
     }
-    const safe = sanitizeHtml(html);
+    const safe = sanitizeHtml(html, document, true);
     const insertion = this.visual?.insertionRange();
     const generation = this.generation,
       before = this.model!.source,

@@ -45,7 +45,11 @@ export function registerHtmlNotes(plugin: VisualKit) {
   const run = (action: () => Promise<unknown>) => {
     void action().catch((error) => new Notice(String(error), 12000));
   };
-  plugin.registerView(HTML_VIEW, (leaf) => new HtmlNoteView(leaf, plugin));
+  plugin.registerView(
+    HTML_VIEW,
+    (leaf) =>
+      new HtmlNoteView(leaf, plugin, (file) => saveHtmlTemplate(plugin, file)),
+  );
   if (plugin.settings.htmlRegisterExtensions) {
     for (const extension of ["html", "htm"]) {
       try {
@@ -134,26 +138,7 @@ export function registerHtmlNotes(plugin: VisualKit) {
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       if (!file || !/\.html?$/i.test(file.path)) return false;
-      if (!checking)
-        run(async () => {
-          const name = await askText(
-            plugin.app,
-            "Save HTML template",
-            file.basename,
-            "Save template",
-          );
-          if (name === null) return;
-          const view = plugin.app.workspace.getActiveViewOfType(HtmlNoteView);
-          if (view) await view.save();
-          await createHtmlNote(
-            plugin,
-            "HTML Templates",
-            name,
-            await plugin.app.vault.read(file),
-            file.path,
-          );
-          new Notice("Template saved. Choose it when creating an HTML note.");
-        });
+      if (!checking) run(() => saveHtmlTemplate(plugin, file));
       return true;
     },
   });
@@ -180,13 +165,46 @@ export function registerHtmlNotes(plugin: VisualKit) {
             .setIcon("file-plus")
             .onClick(() => run(() => create(file.path))),
         );
-      if (file instanceof TFile && /\.html?$/i.test(file.path))
+      if (file instanceof TFile && /\.html?$/i.test(file.path)) {
+        menu.addItem((item) =>
+          item
+            .setTitle("Save as HTML template")
+            .setIcon("file-plus")
+            .onClick(() => run(() => saveHtmlTemplate(plugin, file))),
+        );
         menu.addItem((item) =>
           item
             .setTitle("Open in HTML notes")
             .setIcon("file-code")
             .onClick(() => run(() => open(file))),
         );
+      }
     }),
   );
+}
+
+async function saveHtmlTemplate(plugin: VisualKit, file: TFile) {
+  const name = await askText(
+    plugin.app,
+    "Save HTML template",
+    file.basename,
+    "Save template",
+  );
+  if (name === null) return;
+  const view = plugin.app.workspace
+    .getLeavesOfType(HTML_VIEW)
+    .map((leaf) => leaf.view)
+    .find(
+      (view): view is HtmlNoteView =>
+        view instanceof HtmlNoteView && view.file === file,
+    );
+  if (view) await view.save();
+  await createHtmlNote(
+    plugin,
+    "HTML Templates",
+    name,
+    await plugin.app.vault.read(file),
+    file.path,
+  );
+  new Notice("Template saved. Choose it when creating an HTML note.");
 }

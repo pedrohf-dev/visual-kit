@@ -1,3 +1,11 @@
+## Visual Kit 0.9.1 — HTML editor improvements
+
+- Use icons for common formatting actions and group additional controls under More formatting, Table, and Image.
+- Save HTML notes as templates from the note toolbar or the file explorer context menu.
+- Drag the bottom-right handle of a selected image to resize it proportionally.
+- Preserve merged cells and translate Movidesk-style dashed borders and alternating rows when pasting tables. Leave space to type after a table pasted at the end.
+- Verify that rich clipboard output embeds multiple images in both compatibility modes. Saving the pasted images in Movidesk requires a signed-in ticket test.
+
 ## Visual Kit 0.9.0 — HTML templates and richer formatting
 
 - Add unlimited vault-based HTML templates and a template dropdown to note creation. Save the active HTML note as a template through the command palette.

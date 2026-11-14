@@ -151,3 +151,25 @@
 .vk-html-surface {
   border-radius: 10px;
 }
+
+.vk-html-overflow summary {
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.vk-html-overflow-panel {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: min(420px, 75%);
+  padding: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  box-shadow: var(--shadow-s);
+}
+.vk-html-actions {
+  position: relative;
+  overflow: visible;
+}

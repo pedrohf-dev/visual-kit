@@ -151,6 +151,22 @@ try {
     await page.evaluate(() => window.vkTest.model.source),
     /width="240"/,
   );
+  const image = page.frameLocator("iframe").locator("img");
+  await image.click();
+  const handle = page.frameLocator("iframe").locator(".vk-image-resize");
+  const box = await handle.boundingBox();
+  assert.ok(box);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 40, box.y + box.height / 2, {
+    steps: 4,
+  });
+  await page.mouse.up();
+  assert.equal(await image.getAttribute("width"), "280");
+  assert.doesNotMatch(
+    await page.evaluate(() => window.vkTest.editor.html()),
+    /vk-image-resize/,
+  );
   await mkdir(".test-build", { recursive: true });
   await page.screenshot({
     path: ".test-build/html-editor-browser.png",

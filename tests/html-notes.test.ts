@@ -614,12 +614,39 @@ test("image copy embeds vault bytes, preserves sizes and leaves the clipboard un
   assert.match(result.html, /data:image\/png;base64,/);
   assert.match(result.html, /width="10" height="5"/);
   assert.doesNotMatch(result.html, /app:|\.\.\/attachments/);
+  for (const compatibility of [false, true]) {
+    f.plugin.settings.htmlClipboardCompatibility = compatibility;
+    const image =
+      '<img src="../attachments/evidence.png" width="10" height="5">';
+    await copyHtml(
+      f.plugin as never,
+      f.note as never,
+      "<p>First" + image + "</p><p>Second" + image + "</p>",
+    );
+    const output = parseHtml(clipboard.last.html);
+    assert.equal(output.images.length, 2);
+    for (const item of output.images)
+      assert.match(item.src, /^data:image\/png;base64,/);
+    assert.match(output.body.textContent!, /First.*Second/s);
+  }
   clipboard.last = { html: "untouched", text: "untouched" };
   await assert.rejects(
     copyHtml(f.plugin as never, f.note as never, '<img src="../missing.png">'),
     /Clipboard unchanged/,
   );
   assert.equal(clipboard.last.html, "untouched");
+});
+test("Movidesk-style table paste keeps merged cells and translates table styles", () => {
+  const safe = sanitizeHtml(
+    '<table class="fr-dashed-borders fr-alternate-rows"><tr><th colspan="2">Heading</th></tr><tr><td>First</td><td>Second</td></tr></table>',
+    document,
+    true,
+  );
+  assert.deepEqual(safe.issues, []);
+  const table = parseHtml(safe.html).querySelector("table")!;
+  assert.equal(table.rows[0].cells[0].colSpan, 2);
+  assert.equal(table.rows[1].cells[0].style.borderStyle, "dashed");
+  assert.ok(table.rows[1].style.backgroundColor);
 });
 test("HTML handler conflicts do not unregister other plugins and explicit opening remains available", () => {
   const commands: any[] = [],

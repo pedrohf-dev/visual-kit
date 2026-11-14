@@ -1,5 +1,6 @@
 import {
   FRAME_POLICY,
+  htmlElement,
   sanitizeHtml,
   setSafeHtml,
   inertRoot,
@@ -66,6 +67,7 @@ export class VisualEditor {
         if (target.closest("a")) event.preventDefault();
         this.activeImage =
           target.tagName === "IMG" ? (target as HTMLImageElement) : undefined;
+        if (!readonly) this.showResizeHandle();
         if (this.activeImage) {
           const range = doc.createRange();
           range.selectNode(this.activeImage);
@@ -119,10 +121,11 @@ export class VisualEditor {
       });
     };
     // No imported markup enters srcdoc. Scripts, navigation, forms and network access remain disabled.
-    this.frame.srcdoc = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${FRAME_POLICY}"><style>html{background:white;color:#202124;font:16px Arial,sans-serif}body{margin:20px;min-height:calc(100vh - 40px);overflow-wrap:break-word}body:focus{outline:none}table{border-collapse:collapse}td,th{min-width:24px}img{max-width:100%;cursor:pointer}img:not([src]){display:inline-block;min-width:160px;min-height:36px;border:1px dashed #b23;color:#922}a{cursor:text}</style></head><body></body></html>`;
+    this.frame.srcdoc = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${FRAME_POLICY}"><style>html{background:white;color:#202124;font:16px Arial,sans-serif}body{margin:20px;min-height:calc(100vh - 40px);overflow-wrap:break-word}body:focus{outline:none}table{border-collapse:collapse}td,th{min-width:24px}img{max-width:100%;cursor:pointer}img:not([src]){display:inline-block;min-width:160px;min-height:36px;border:1px dashed #b23;color:#922}a{cursor:text}.vk-image-resize{position:fixed;width:14px;height:14px;background:#6750d8;border:2px solid white;box-sizing:border-box;border-radius:3px;cursor:nwse-resize;touch-action:none;z-index:10}</style></head><body></body></html>`;
   }
   destroy() {
     this.stopped = true;
+    this.resizeListeners?.abort();
     this.frame.onload = null;
     this.frame.remove();
   }
@@ -255,7 +258,16 @@ export class VisualEditor {
   }
   insert(html: string, range?: Range) {
     if (range) this.selection = range.cloneRange();
-    this.command("insertHTML", this.displayRoot(html).innerHTML);
+    const root = this.displayRoot(html);
+    if (
+      root.lastElementChild?.tagName === "TABLE" &&
+      root.lastChild === root.lastElementChild
+    ) {
+      const paragraph = htmlElement("p", root.ownerDocument);
+      paragraph.append(htmlElement("br", root.ownerDocument));
+      root.append(paragraph);
+    }
+    this.command("insertHTML", root.innerHTML);
     this.decorateImages();
   }
   private displayRoot(html: string) {
@@ -292,6 +304,81 @@ export class VisualEditor {
         );
       }
     }
+  }
+  private resizeListeners?: AbortController;
+  private resizeHandle?: HTMLElement;
+  private showResizeHandle() {
+    this.resizeListeners?.abort();
+    this.resizeHandle?.remove();
+    const image = this.selectedImage();
+    const doc = this.doc;
+    if (!image || !doc) return;
+    const handle = htmlElement("span", doc);
+    handle.className = "vk-image-resize";
+    handle.title = "Drag to resize image";
+    this.resizeHandle = handle;
+    doc.documentElement.append(handle);
+    const position = () => {
+      const rect = image.getBoundingClientRect();
+      document.body.setCssStyles.call(handle, {
+        left: rect.right - 7 + "px",
+        top: rect.bottom - 7 + "px",
+      });
+    };
+    position();
+    const stop = new AbortController();
+    this.resizeListeners = stop;
+    doc.addEventListener("scroll", position, { signal: stop.signal });
+    doc.defaultView?.addEventListener("resize", position, {
+      signal: stop.signal,
+    });
+    handle.onclick = (event) => event.stopPropagation();
+    handle.onpointerdown = (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      handle.setPointerCapture(event.pointerId);
+      const initial = image.getBoundingClientRect();
+      const start = event.clientX;
+      const original = image.getAttribute("style");
+      let width = initial.width;
+      handle.onpointermove = (move) => {
+        width = Math.round(
+          Math.max(
+            24,
+            Math.min(
+              16384,
+              doc.body.clientWidth,
+              initial.width + move.clientX - start,
+            ),
+          ),
+        );
+        document.body.setCssStyles.call(image, {
+          width: width + "px",
+          height: "auto",
+        });
+        position();
+      };
+      const finish = (commit: boolean) => {
+        handle.onpointermove = null;
+        if (original === null) image.removeAttribute("style");
+        else image.setAttribute("style", original);
+        if (commit && width !== initial.width)
+          this.mutate(() => {
+            image.width = width;
+            image.removeAttribute("height");
+            document.body.setCssStyles.call(image, {
+              width: width + "px",
+              height: "auto",
+            });
+          });
+        position();
+      };
+      handle.onlostpointercapture = () => {
+        if (handle.onpointermove) finish(false);
+      };
+      handle.onpointerup = () => finish(true);
+      handle.onpointercancel = () => finish(false);
+    };
   }
   resource?: (source: string) => string | undefined;
   selectedImage() {
